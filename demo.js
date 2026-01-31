@@ -1,4 +1,4 @@
-import { AESGCM } from "./algorithms/AESGCM .js";
+import { AESGCM } from "./algorithms/AESGCM/AESGCM .js";
 import { ReverseEngineer, CryptoUtils } from "./ReverseEngineer.js";
 
 const engineer = new ReverseEngineer();
