@@ -99,3 +99,36 @@ addReverseAlgorithm(...?params){
   // Enter code here
 }
 ```
+
+## CryptoUtils
+These are some utilites with cryptography
+
+**b642Bytes** Converts Base64 to Bytes
+```js
+CryptoUtils.b64ToBytes(base64);
+```
+
+**bytesToB64** Converts Bytes to Base64
+```js
+CryptoUtils.bytesToB64(bytes);
+```
+
+**randomBytes** Generates a random bytes
+```js
+CryptoUtils.randomBytes(length);
+```
+
+**utf8ToBytes** Converts UTF-8 to Bytes
+```js
+CryptoUtils.utf8ToBytes(str);
+```
+
+**bytesToUtf8** Converts Bytes to UTF-8
+```js
+CryptoUtils.bytesToUtf8(str);
+```
+
+**generateB64Key** Generates a Base64 key
+```js
+CryptoUtils.generateB64Key(length);
+```
