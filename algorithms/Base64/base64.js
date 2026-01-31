@@ -5,8 +5,8 @@ export const Base64 = class extends ReverseEngineer {
   constructor() {
     super();
     this.getInstance();
-    this.description = "Encodes and decodes strings to/from Base64";
-    this.version = "1.1.0";
+    description = "Encodes and decodes strings to/from Base64";
+    version = "1.1.0";
   }
   /**
    * Execute on initialize

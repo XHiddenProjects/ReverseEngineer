@@ -4,8 +4,8 @@ export const VigenereCipher = class extends ReverseEngineer{
         super();
         this.getInstance();
         // Configuration
-        this.description = 'This will forward and reverse in Vigenère Cipher'
-        this.version = '1.0.0';
+        description = 'This will forward and reverse in Vigenère Cipher'
+        version = '1.0.0';
     }
     /**
      * Execute on initialize

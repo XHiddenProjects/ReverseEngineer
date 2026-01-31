@@ -5,8 +5,8 @@ export const Base32 = class extends ReverseEngineer {
   constructor() {
     super();
     this.getInstance();
-    this.description = "Encodes and decodes strings to/from Base32";
-    this.version = "1.1.0";
+    description = "Encodes and decodes strings to/from Base32";
+    version = "1.1.0";
   }
   /**
    * Execute on initialize

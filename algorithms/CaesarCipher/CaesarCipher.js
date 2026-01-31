@@ -4,8 +4,8 @@ export const CaesarCipher = class extends ReverseEngineer{
         super();
         this.getInstance();
         // Configuration
-        this.description = 'This will forward and reverse in Caesar Cipher'
-        this.version = '1.0.0';
+        description = 'This will forward and reverse in Caesar Cipher'
+        version = '1.0.0';
     }
     /**
      * Execute on initialize

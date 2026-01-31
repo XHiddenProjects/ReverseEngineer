@@ -4,8 +4,8 @@ export const XOR = class extends ReverseEngineer{
         super();
         this.getInstance();
         // Configuration
-        this.description = 'This will forward and reverse in XOR Cipher'
-        this.version = '1.0.0';
+        description = 'This will forward and reverse in XOR Cipher'
+        version = '1.0.0';
     }
     /**
      * Execute on initialize
