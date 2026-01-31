@@ -63,3 +63,39 @@ engineer.forward(Algorithm_Class_Object,...params); //Lunchs the forward functio
 engineer.reverse(Algorithm_Class_Object,...params); //Lunches the reverse function of the algorithm class object
 ```
 
+## Developers
+To create your own algortihm you have to extend on the **ReverseEngineer**
+1. import `ReverseEngineer`
+```js
+import { ReverseEngineer } from '.../path/to/ReverseEngineer.js';
+```
+2. Create a _constant_ class for you algorithm
+```js
+export const AlgorithmName = class extends ReverseEngineer{
+  constructor(){
+    super();
+    this.getInstance();
+    //Configuration
+    description = 'Metadata description for the class';
+    version = 'Metadata version of the class';
+  }
+}
+```
+3. Triggering _Initialization_ function
+```js
+init(...?params){
+  // Enter code here
+}
+```
+4. Triggering _forward_ algorithm
+```js
+addForwardAlgorithm(...params){
+  // Enter code here
+}
+```
+5. Trigger _reverse_ algorithm
+```js
+addReverseAlgorithm(...?params){
+  // Enter code here
+}
+```
