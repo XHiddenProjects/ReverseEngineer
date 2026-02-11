@@ -1,7 +1,7 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 export const VigenereCipher = class extends ReverseEngineer{
     description = 'This will forward and reverse in Vigenère Cipher'
-    version = '1.0.0';
+    version = '1.0.1';
     constructor(){
         super();
         this.getInstance();
@@ -37,8 +37,10 @@ export const VigenereCipher = class extends ReverseEngineer{
                 const newIndex = (index + keyCharIndex) % split.length
                 if(isUpperCase(message[msg]))
                     encode+=split[newIndex].toLocaleUpperCase();
-                if(isLowerCase(message[msg]))
+                else if(isLowerCase(message[msg]))
                     encode+=split[newIndex].toLocaleLowerCase();
+                else
+                    encode+=split[newIndex]
                 keyIndex++;
             }
         }
@@ -67,12 +69,12 @@ export const VigenereCipher = class extends ReverseEngineer{
                 const keyCharIndex = split.indexOf(keyChar);
                 if(keyCharIndex<0) throw new Error(`Invalid character '${keyChar}' in key`);
                 const newIndex = (index - keyCharIndex + split.length) % split.length;
-                if(isUpperCase(encode[msg])){
+                if(isUpperCase(encode[msg]))
                     decode+=split[newIndex].toLocaleUpperCase();
-                }
-                if(isLowerCase(encode[msg])){
+                else if(isLowerCase(encode[msg]))
                     decode+=split[newIndex].toLocaleLowerCase();
-                }
+                else decode+=split[newIndex];
+                
                 keyIndex++;
             }
         }
