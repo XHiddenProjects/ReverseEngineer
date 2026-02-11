@@ -1,285 +1,133 @@
-# BijectiveNumeration.js
+# Bijective Numeration Usage
 
-A tiny, dependency‑free **bijective numeration** algorithm class that **extends** your `ReverseEngineer` container. It provides base‑N **encode/decode** using a **bijective** alphabet (no zero digit). The default alphabet is `A–Z`, which matches Excel‑style column labels (`A, B, …, Z, AA, AB, …`).
-
-- `init()` – optional initialization
-- `addForwardAlgorithm(number, alphabet?)` – **encode** non‑negative integers → string
-- `addReverseAlgorithm(code, alphabet?)` – **decode** string → non‑negative integer
-
-> In bijective numeration: `A` represents **1** internally. This implementation maps the external **integer 0** → `"A"`, **1** → `"B"`, etc., so round‑trips are consistent (0 ⇄ "A").
+Use the **BijectiveNumeration** algorithm directly in the browser with native ES Modules.
 
 ---
 
-## Table of Contents
+## ✅ Requirements
+- A modern browser (ES Modules support).
+- Serve files over **HTTP(S)** (not `file://`) so module imports work consistently.
+- Your project should include:
+  - `./algorithms/BijectiveNumeration/BijectiveNumeration.js`
+  - `./ReverseEngineer.js`
 
-- [BijectiveNumeration.js](#bijectivenumerationjs)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Quick Start](#quick-start)
-  - [API](#api)
-    - [Class: `BijectiveNumeration`](#class-bijectivenumeration)
-      - [Properties](#properties)
-      - [Methods](#methods)
-  - [Usage Patterns](#usage-patterns)
-    - [Excel‑style A–Z Labels](#excelstyle-az-labels)
-    - [Custom Alphabets](#custom-alphabets)
-    - [Using With ReverseEngineer](#using-with-reverseengineer)
-  - [Examples](#examples)
-    - [Browser Example](#browser-example)
-    - [Node Example](#node-example)
-  - [Troubleshooting](#troubleshooting)
-  - [FAQ](#faq)
-  - [Performance Notes](#performance-notes)
-  - [Security Notes](#security-notes)
-  - [Testing](#testing)
-  - [Versioning](#versioning)
-  - [License](#license)
+> **Note:** Ensure there are **no extra spaces** in your import paths (e.g., `BijectiveNumeration .js` will fail).
 
 ---
 
-## Features
-
-- 🔁 **Bidirectional** — encode non‑negative integers and decode codes back
-- 🧩 **Pluggable** — registers into your existing `ReverseEngineer` system
-- 🔤 **Custom alphabet** — use any unique character set (no zero digit, e.g., `ABCDEFGHIJKLMNOPQRSTUVWXYZ`)
-- 🧮 **Excel‑style mapping** — defaults to A–Z and yields familiar sequences (`A, B, …, Z, AA, AB, …`)
-- 🌍 **Works everywhere** — Node.js & browser‑compatible
-
----
-
-## Prerequisites
-- The `ReverseEngineer` class from your project
-- Environment with standard JS runtime (no external deps)
-
----
-
-## Installation
-
-If `BijectiveNumeration.js` is part of your project:
-
-```js
-import { BijectiveNumeration } from "./BijectiveNumeration.js";
-import { ReverseEngineer } from "./ReverseEngineer.js";
+## 📁 Recommended Project Structure
 ```
-
-No external dependencies are required.
-
----
-
-## Quick Start
-
-```js
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { BijectiveNumeration } from "./BijectiveNumeration.js";
-
-const RE = new ReverseEngineer().getInstance();
-RE.add(BijectiveNumeration);
-RE.init("BijectiveNumeration"); // optional
-
-console.log(RE.forward("BijectiveNumeration", 0));   // "A"
-console.log(RE.forward("BijectiveNumeration", 25));  // "Z"
-console.log(RE.forward("BijectiveNumeration", 26));  // "AA"
-console.log(RE.reverse("BijectiveNumeration", "ZZ")); // 701
+/your-project
+  /algorithms
+    /BijectiveNumeration
+      BijectiveNumeration.js
+  ReverseEngineer.js
+  index.html
 ```
 
 ---
 
-## API
-
-### Class: `BijectiveNumeration`
-
-#### Properties
-- `version` – Algorithm version (e.g., `"1.0.0"`)
-- `description` – Human‑readable description
-
-#### Methods
-- **`init(): void`**  
-  Optional setup; logs a debug message that the algorithm is loaded.
-
-- **`addForwardAlgorithm(message: number, alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'): string`**  
-  Encodes a **non‑negative integer** using bijective numeration with the given `alphabet`. `message` must be an **integer ≥ 0**. Returns the encoded string.  
-  *Edge case:* When `message === 0`, this implementation returns `"A"` (first symbol), keeping round‑trip symmetry with the decoder.
-
-- **`addReverseAlgorithm(code: string, alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'): number`**  
-  Decodes a bijective‑encoded string back to a **non‑negative integer**. Throws if the string contains a character not present in `alphabet`.
-
-> These method names match the `ReverseEngineer` container and are auto‑bound when you call `RE.add(BijectiveNumeration)`.
-
----
-
-## Usage Patterns
-
-### Excel‑style A–Z Labels
-
-```js
-// Default alphabet = 'A'..'Z'
-RE.forward("BijectiveNumeration", 0);   // "A"
-RE.forward("BijectiveNumeration", 25);  // "Z"
-RE.forward("BijectiveNumeration", 26);  // "AA"
-RE.forward("BijectiveNumeration", 27);  // "AB"
-RE.reverse("BijectiveNumeration", "AAA"); // 702
-```
-
-### Custom Alphabets
-
-You can use any **unique‑character** alphabet, e.g., digits without zero, or a mixed set:
-
-```js
-// Base‑9 (digits 1..9); note there is **no zero** in bijective systems
-const ALPH9 = "123456789";
-
-RE.forward("BijectiveNumeration", 0, ALPH9);   // "1"
-RE.forward("BijectiveNumeration", 8, ALPH9);   // "9"
-RE.forward("BijectiveNumeration", 9, ALPH9);   // "11"
-RE.reverse("BijectiveNumeration", "99", ALPH9); // 80
-
-// Mixed case custom alphabet (ensure your decode alphabet matches input case)
-const ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // no I or O, for example
-RE.forward("BijectiveNumeration", 31, ALPHA);  // "AF" (example)
-```
-
-> **Case sensitivity note:** `addReverseAlgorithm` uppercases the **input** but does **not** alter the `alphabet`. If you pass a custom alphabet, ensure it contains the **uppercase** symbols you expect (or adapt the class to uppercase the alphabet internally).
-
-### Using With ReverseEngineer
-
-```js
-const RE = new ReverseEngineer().getInstance().add(BijectiveNumeration);
-RE.init("BijectiveNumeration"); // optional
-
-console.log(RE.list());
-// ["BijectiveNumeration"]
-
-const out = RE.forward("BijectiveNumeration", 12345);
-const back = RE.reverse("BijectiveNumeration", out);
-```
-
----
-
-## Examples
-
-### Browser Example
+## 🚀 Quick Start (HTML + ES Modules)
+Create an `index.html` and open it via a local HTTP server.
 
 ```html
-<input id=\"num\" type=\"number\" min=\"0\" placeholder=\"Enter a number...\" />
-<pre id=\"out\"></pre>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bijective Numeration Demo (Browser)</title>
+  </head>
+  <body>
+    <h1>Bijective Numeration Demo (Browser)</h1>
 
-<script type=\"module\">
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { BijectiveNumeration } from "./BijectiveNumeration.js";
+    <script type="module">
+      import { BijectiveNumeration } from "./algorithms/BijectiveNumeration/BijectiveNumeration.js";
+      import { ReverseEngineer } from "./ReverseEngineer.js";
 
-const RE = new ReverseEngineer().getInstance().add(BijectiveNumeration);
+      const engineer = new ReverseEngineer();
+      engineer.getInstance();
+      engineer.add(BijectiveNumeration);
 
-const num = document.getElementById("num");
-const out = document.getElementById("out");
+      // No initialization parameters required
+      engineer.init(BijectiveNumeration);
 
-num.addEventListener("input", (e) => {
-  const n = Number(e.target.value);
-  if (Number.isInteger(n) && n >= 0) {
-    out.textContent = RE.forward("BijectiveNumeration", n);
-  } else {
-    out.textContent = "";
-  }
-});
-</script>
-```
+      // ✅ Encode numbers using default alphabet (A–Z)
+      console.log("0  ->", engineer.forward(BijectiveNumeration, 0));   // A
+      console.log("25 ->", engineer.forward(BijectiveNumeration, 25));  // Z
+      console.log("26 ->", engineer.forward(BijectiveNumeration, 26));  // AA
+      console.log("701->", engineer.forward(BijectiveNumeration, 701)); // ZZ
+      console.log("702->", engineer.forward(BijectiveNumeration, 702)); // AAA
 
-### Node Example
+      // ✅ Decode back to numbers (string -> number)
+      console.log("A   ->", engineer.reverse(BijectiveNumeration, "A"));     // 0
+      console.log("Z   ->", engineer.reverse(BijectiveNumeration, "Z"));     // 25
+      console.log("AA  ->", engineer.reverse(BijectiveNumeration, "AA"));    // 26
+      console.log("ZZ  ->", engineer.reverse(BijectiveNumeration, "ZZ"));    // 701
+      console.log("AAA ->", engineer.reverse(BijectiveNumeration, "AAA"));   // 702
 
-```js
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { BijectiveNumeration } from "./BijectiveNumeration.js";
+      // ✅ Custom base via custom alphabet (must be uppercase if you pass uppercase input)
+      const alphabet36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // base-36 uppercase
+      console.log("35 ->", engineer.forward(BijectiveNumeration, 35, alphabet36)); // Z
+      console.log("36 ->", engineer.forward(BijectiveNumeration, 36, alphabet36)); // 10
+      console.log("'10' ->", engineer.reverse(BijectiveNumeration, "10", alphabet36)); // 36
+    </script>
 
-const RE = new ReverseEngineer().getInstance().add(BijectiveNumeration);
+    <!-- Alternative: Use the class directly (without the manager) -->
+    <!--
+    <script type="module">
+      import { BijectiveNumeration } from "./algorithms/BijectiveNumeration/BijectiveNumeration.js";
 
-const code = RE.forward("BijectiveNumeration", 701); // "ZZ"
-const n = RE.reverse("BijectiveNumeration", code);   // 701
-console.log(code, n);
-```
+      const bij = new BijectiveNumeration();
+      bij.init(); // logs that the algorithm loaded
 
----
+      const code = bij.addForwardAlgorithm(26);  // "AA"
+      const num  = bij.addReverseAlgorithm("AA"); // 26
 
-## Troubleshooting
-
-- **`message must be a number`**  
-  Ensure you pass an **integer ≥ 0** to the encoder.
-
-- **`Invalid character 'X' in code`**  
-  The decoder saw a char not present in your `alphabet`. Make sure the input uses the same alphabet that was intended for encoding.
-
-- **Custom alphabet + lowercase input doesn’t decode**  
-  The decoder uppercases the input but doesn’t change the alphabet. Provide an **uppercase alphabet** or modify the class to normalize the alphabet.
-
----
-
-## FAQ
-
-**Why is 0 encoded as `"A"`?**  
-In bijective numeration, the first symbol represents 1. This library maps external integer **0** to the first symbol to keep round‑trip behavior simple (0 ⇄ "A").
-
-**Can I include digits or symbols in the alphabet?**  
-Yes—any unique characters are fine. Avoid a zero‑like symbol if you expect human entry confusion.
-
-**Is this the same as base‑N with zero?**  
-No. Bijective numeration has no zero digit; digit values are 1..N.
-
----
-
-## Performance Notes
-
-- Encoding and decoding are **O(log_base(n))** with small constant factors
-- Uses JS `Number`; maximum safe input/output is up to **2^53 − 1** (≈ 9e15). For larger integers, consider `BigInt` and adapt the implementation.
-
----
-
-## Security Notes
-
-- This is **not** encryption. Do not use to protect secrets.
-
----
-
-## Testing
-
-Example Jest tests:
-
-```js
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { BijectiveNumeration } from "./BijectiveNumeration.js";
-
-const setup = () => new ReverseEngineer().getInstance().add(BijectiveNumeration);
-
-test("excel-style roundtrip", () => {
-  const RE = setup();
-  const cases = [0, 1, 25, 26, 27, 701, 702, 703];
-  for (const n of cases) {
-    const code = RE.forward("BijectiveNumeration", n);
-    const back = RE.reverse("BijectiveNumeration", code);
-    expect(back).toBe(n);
-  }
-});
-
-test("custom alphabet roundtrip", () => {
-  const RE = setup();
-  const ALPH9 = "123456789";
-  const n = 80; // "99" in ALPH9
-  const code = RE.forward("BijectiveNumeration", n, ALPH9);
-  const back = RE.reverse("BijectiveNumeration", code, ALPH9);
-  expect(back).toBe(n);
-});
-
+      console.log({ code, num });
+    </script>
+    -->
+  </body>
+</html>
 ```
 
 ---
 
-## Versioning
-
-Current version: **1.0.0**
+## 🔎 About the Algorithm
+- **What it is**: Bijective numeration is a positional numeral system **without a zero digit**. Each position uses values 1..base instead of 0..(base-1). A common example is spreadsheet columns (A, B, ..., Z, AA, AB, ...).
+- **Default alphabet**: `A–Z` (base 26). Example mappings:
+  - `0 → A`, `25 → Z`, `26 → AA`, `701 → ZZ`, `702 → AAA`.
+- **Custom bases**: Supply a custom `alphabet` string; the base is `alphabet.length`.
+- **No Web Crypto needed**: This algorithm is pure string/number logic; secure context is not required, but serving over HTTP(S) avoids module import issues.
 
 ---
 
-## License
+## 🌐 Serve Over HTTP(S)
+Use any simple static server, for example with Python:
 
+```bash
+# From the project root
+python3 -m http.server 8080
+# Then open http://localhost:8080 in your browser
 ```
-MIT License
-```
+
+---
+
+## 🧩 API Quick Reference
+- `engineer.add(BijectiveNumeration)` → registers the algorithm.
+- `engineer.init(BijectiveNumeration)` → no parameters required.
+- `engineer.forward(BijectiveNumeration, message, alphabet?)` → encodes a **non‑negative integer** using the (optional) alphabet.
+- `engineer.reverse(BijectiveNumeration, code, alphabet?)` → decodes a **non‑empty string** to a number.
+
+---
+
+## ⚠️ Common Pitfalls & Fixes
+- **Non‑integer or negative inputs** → `message` must be an integer ≥ 0; otherwise an error is thrown.
+- **Case and custom alphabets** → Decoding uppercases the input (`encode.toUpperCase()`), then searches each character in `alphabet`. Ensure your **alphabet contains matching uppercase** characters (e.g., pass `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"` or an uppercase custom string). If you need lowercase, adjust the alphabet and input handling accordingly.
+- **Invalid characters** → Decoding throws an error if a character is not found in the `alphabet`.
+
+---
+
+## ✅ Summary
+- Pure browser usage with native ES Modules.
+- Default base‑26 alphabet (`A–Z`) with Excel‑style mappings.
+- Supports custom bases via user‑supplied alphabets.

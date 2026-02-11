@@ -1,277 +1,144 @@
-# Base32.js
+# Base32 Usage
 
-A tiny, dependency‑free Base32 algorithm class that **extends** your `ReverseEngineer` container. It provides RFC 4648 Base32 **encoding/decoding** with a consistent API:
-
-- `init()` – optional initialization
-- `addForwardAlgorithm(message, sanitize?, sanitizeOptions?)` – **encode** to Base32
-- `addReverseAlgorithm(base32, isSanitized?)` – **decode** from Base32
-
-Supports **string** inputs/outputs with optional sanitization helpers for transport‑safe tokens.
+Use the **Base32** algorithm directly in the browser with native ES Modules.
 
 ---
 
-## Table of Contents
+## ✅ Requirements
+- A modern browser (ES Modules support).
+- Serve files over **HTTP(S)** (not `file://`) so module imports work consistently.
+- Your project should include:
+  - `./algorithms/Base32/Base32.js`
+  - `./ReverseEngineer.js`
 
-- [Base32.js](#base32js)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Quick Start](#quick-start)
-  - [API](#api)
-    - [Class: `Base32`](#class-base32)
-      - [Properties](#properties)
-      - [Methods](#methods)
-  - [Usage Patterns](#usage-patterns)
-    - [Basic Encode/Decode](#basic-encodedecode)
-    - [Sanitized Output (no padding / lowercase / no spaces)](#sanitized-output-no-padding--lowercase--no-spaces)
-    - [Decoding Sanitized or Human‑Entered Variants](#decoding-sanitized-or-humanentered-variants)
-    - [Using With ReverseEngineer](#using-with-reverseengineer)
-  - [Examples](#examples)
-    - [Browser Example](#browser-example)
-    - [Node Example](#node-example)
-  - [Troubleshooting](#troubleshooting)
-  - [FAQ](#faq)
-  - [Performance Notes](#performance-notes)
-  - [Security Notes](#security-notes)
-  - [Testing](#testing)
-  - [Versioning](#versioning)
-  - [License](#license)
+> **Note:** Ensure there are **no extra spaces** in your import paths. For example, `Base32 .js` (with a space) will fail.
 
 ---
 
-## Features
-
-- 🔁 **Bidirectional** — encode and decode, symmetric by design
-- 🧩 **Pluggable** — registers into your existing `ReverseEngineer` system
-- 🧼 **Sanitization options** — trim `=`, remove whitespace, lowercase
-- 🆎 **Human‑friendly decoding** — optional normalization for common mistakes (`0→O`, `1/L→I`, `-`/`_` removed)
-- 🧵 **Type‑preserving** — always returns **string** output
-- 🌍 **Works everywhere** — Node.js & browser‑compatible
-
----
-
-## Prerequisites
-- The `ReverseEngineer` class from your project (and optionally `CryptoUtils` if you want UTF‑8 helpers elsewhere)
-- Environment with **TextEncoder/TextDecoder** (modern browsers, Node 18+, or polyfill)
-
----
-
-## Installation
-
-If `Base32.js` is part of your project:
-
-```js
-import { Base32 } from "./Base32.js";
-import { ReverseEngineer } from "./ReverseEngineer.js";
+## 📁 Recommended Project Structure
 ```
-
-No external dependencies are required.
-
----
-
-## Quick Start
-
-```js
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { Base32 } from "./Base32.js";
-
-const RE = new ReverseEngineer().getInstance();
-RE.add(Base32);
-RE.init("Base32"); // optional
-
-const enc = RE.forward("Base32", "Hello, World!");
-// enc: "JBSWY3DPEBLW64TMMQQQ===="
-
-const dec = RE.reverse("Base32", enc);
-// dec: "Hello, World!"
+/your-project
+  /algorithms
+    /Base32
+      Base32.js
+  ReverseEngineer.js
+  index.html
 ```
 
 ---
 
-## API
-
-### Class: `Base32`
-
-#### Properties
-- `version` – Algorithm version (e.g., `"1.0.0"`)
-- `description` – Human‑readable description
-
-#### Methods
-- **`init(): void`**  
-  Optional setup; logs a debug message that the algorithm is loaded.
-
-- **`addForwardAlgorithm(message: string, sanitize = false, sanitizeOptions = { lower: true }): string`**  
-  Encodes UTF‑8 input to **RFC 4648 Base32** with `=` padding. If `sanitize` is true, removes padding and whitespace and lowercases the output by default.
-
-- **`addReverseAlgorithm(base32: string, isSanitized = false): string`**  
-  Decodes a Base32 string to UTF‑8. If `isSanitized` is true, normalizes common variants (`0→O`, `1/L→I`, strips `-`/`_`, ignores padding & whitespace).
-
-> These method names match the `ReverseEngineer` container and are auto‑bound when you call `RE.add(Base32)`.
-
----
-
-## Usage Patterns
-
-### Basic Encode/Decode
-
-```js
-const s = "Attack at Dawn!";
-const b32 = RE.forward("Base32", s);
-const back = RE.reverse("Base32", b32);
-```
-
-### Sanitized Output (no padding / lowercase / no spaces)
-
-```js
-const encSan = RE.forward("Base32", "Token-123", true, { lower: true });
-// e.g., "krugs4zanfzsa===" → "krugs4zanfzsa" (sanitized)
-```
-
-### Decoding Sanitized or Human‑Entered Variants
-
-```js
-// Accepts lowercase, no padding, and fixes common substitutions
-const decoded = RE.reverse("Base32", "jbswy3dpeblw64tmmqqq", true);
-```
-
-### Using With ReverseEngineer
-
-```js
-const RE = new ReverseEngineer().getInstance().add(Base32);
-RE.init("Base32"); // optional
-
-console.log(RE.list());
-// ["Base32"]
-
-const out = RE.forward("Base32", "Hello");
-const back = RE.reverse("Base32", out);
-```
-
----
-
-## Examples
-
-### Browser Example
+## 🚀 Quick Start (HTML + ES Modules)
+Create an `index.html` and open it via a local HTTP server.
 
 ```html
-<input id="txt" placeholder="Type text..." />
-<pre id="out"></pre>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Base32 Demo (Browser)</title>
+  </head>
+  <body>
+    <h1>Base32 Demo (Browser)</h1>
 
-<script type="module">
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { Base32 } from "./Base32.js";
+    <script type="module">
+      import { Base32 } from "./algorithms/Base32/Base32.js";
+      import { ReverseEngineer } from "./ReverseEngineer.js";
 
-const RE = new ReverseEngineer().getInstance().add(Base32);
+      const engineer = new ReverseEngineer();
+      engineer.getInstance();
+      engineer.add(Base32);
 
-const txt = document.getElementById("txt");
-const out = document.getElementById("out");
+      // Base32 does not require initialization parameters
+      engineer.init(Base32);
 
-txt.addEventListener("input", (e) => {
-  out.textContent = RE.forward("Base32", e.target.value, true); // sanitized
-});
-</script>
+      // ✅ Encode
+      // sanitize=true  → removes padding "=", strips whitespace, lowercases by default
+      const encoded = engineer.forward(Base32, "Hello, World!", true, { lower: true });
+      console.log("Base32 Encoded:", encoded);
+
+      // ✅ Decode
+      // isSanitized=true → normalizes common substitutions (0->O, 1/L->I) and removes -/_ if present
+      const decoded = engineer.reverse(Base32, encoded, true);
+      console.log("Base32 Decoded:", decoded);
+    </script>
+
+    <!-- Alternative: Use the class directly (without the manager) -->
+    <!--
+    <script type="module">
+      import { Base32 } from "./algorithms/Base32/Base32.js";
+
+      const base32 = new Base32();
+      base32.init(); // logs that Base32 loaded
+
+      const encoded = base32.addForwardAlgorithm("Hello, World!", true, { lower: true });
+      const decoded = base32.addReverseAlgorithm(encoded, true);
+
+      console.log("Base32 Encoded:", encoded);
+      console.log("Base32 Decoded:", decoded);
+    </script>
+    -->
+  </body>
+</html>
 ```
 
-### Node Example
+---
 
+## 🔎 About the Algorithm
+- **Alphabet**: RFC 4648 Base32 alphabet `A–Z` + `2–7`.
+- **Padding**: Encoded output is padded with `=` to a multiple of 8 characters (if not sanitized).
+- **Sanitize option (encode)**: `sanitize=true` removes `=`, removes whitespace, and lowercases by default (configurable via `{ lower: true/false }`).
+- **Sanitized decode**: With `isSanitized=true`, common substitutions are normalized: `0→O`, `1/L→I`, and separators `-`/`_` are removed.
+- **Errors**: Decoding throws an error if an invalid character is encountered.
+
+---
+
+## 🌐 Serve Over HTTP(S)
+Use any simple static server, for example with Python:
+
+```bash
+# From the project root
+python3 -m http.server 8080
+# Then open http://localhost:8080 in your browser
+```
+
+> Unlike algorithms that use Web Crypto, Base32 does **not** require a secure context, but serving over HTTP(S) avoids module import issues.
+
+---
+
+## 🧪 Text/Binary Encoding Helpers
+The implementation uses `TextEncoder`/`TextDecoder` internally. If you need them elsewhere:
 ```js
-// Node 18+: TextEncoder/TextDecoder are global
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { Base32 } from "./Base32.js";
-
-const RE = new ReverseEngineer().getInstance().add(Base32);
-
-const enc = RE.forward("Base32", "Server Logs 2026!", true);
-const dec = RE.reverse("Base32", enc, true);
-console.log(enc, dec);
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+const bytes = enc.encode("Hello, World!");
+const text = dec.decode(bytes);
 ```
 
 ---
 
-## Troubleshooting
-
-- **`X has not been instanced`**  
-  Call `RE.add(Base32)` before using it (and optionally `RE.init("Base32")`).
-
-- **`Invalid Base32 character: "?"`**  
-  The decoder encountered a character outside the Base32 alphabet; pass `isSanitized=true` if you expect human‑entered variants.
-
-- **Unexpected output**  
-  Ensure you’re passing a **string**. If you’re working with bytes, convert to/from UTF‑8 using your own helpers (`TextEncoder`/`TextDecoder` or `CryptoUtils`).
+## 🧩 API Quick Reference
+- `engineer.add(Base32)` → registers the algorithm.
+- `engineer.init(Base32)` → optional for Base32 (no params required).
+- `engineer.forward(Base32, message, sanitize?, sanitizeOptions?)` → returns Base32 string.
+  - `sanitizeOptions`: `{ lower: true }` by default.
+- `engineer.reverse(Base32, base32, isSanitized?)` → returns decoded string.
 
 ---
 
-## FAQ
-
-**Is Base32 encryption?**  
-No — it’s a binary‑to‑text **encoding**. Use cryptography (e.g., AES‑GCM) for confidentiality.
-
-**Why do I see `=` padding?**  
-Per RFC 4648, Base32 uses `=` padding to align output to 40‑bit blocks. You can disable it in transport via the `sanitize` option (decoder does not require padding).
-
-**Can I decode lowercase or URL‑friendly strings?**  
-Yes — pass `isSanitized=true` to accept lowercase, strip separators, and fix common character confusions.
-
----
-
-## Performance Notes
-
-- Single‑pass bit‑buffer implementation; fast for long strings
-- Sanitization/normalization runs in linear time over the input
-- Output grows by ~60% compared to the original bytes (Base32 overhead)
+## ⚠️ Common Pitfalls & Fixes
+- **Import path spaces**
+  ```js
+  // ❌ Wrong
+  import { Base32 } from "./algorithms/Base32/Base32 .js";
+  // ✅ Correct
+  import { Base32 } from "./algorithms/Base32/Base32.js";
+  ```
+- **Module import errors** → Serve via an HTTP server so the browser sets proper MIME types for `.js` files.
+- **Decode errors** → Ensure your input uses the RFC 4648 alphabet (`A–Z`, `2–7`) or enable `isSanitized=true` for normalized inputs.
 
 ---
 
-## Security Notes
-
-- Base32 is **not** secure. It provides no confidentiality or integrity
-- For secrets, pair with authenticated encryption (e.g., AES‑GCM) and then encode if needed
-
----
-
-## Testing
-
-Example Jest tests:
-
-```js
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { Base32 } from "./Base32.js";
-
-const setup = () => new ReverseEngineer().getInstance().add(Base32);
-
-test("roundtrip string", () => {
-  const RE = setup();
-  const s = "Hello, World!";
-  const out = RE.forward("Base32", s);
-  const back = RE.reverse("Base32", out);
-  expect(back).toBe(s);
-});
-
-test("sanitized forward + sanitized decode", () => {
-  const RE = setup();
-  const out = RE.forward("Base32", "Token-123", true, { lower: true });
-  const back = RE.reverse("Base32", out, true);
-  expect(back).toBe("Token-123");
-});
-
-test("invalid char throws", () => {
-  const RE = setup();
-  expect(() => RE.reverse("Base32", "@@@"))
-    .toThrow(/Invalid Base32 character/);
-});
-```
-
----
-
-## Versioning
-
-Current version: **1.0.0**
-
----
-
-## License
-
-```
-MIT License
-```
+## ✅ Summary
+- Pure browser usage with native ES Modules.
+- No initialization parameters required for Base32.
+- Use the manager or instantiate the class directly.

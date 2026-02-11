@@ -1,269 +1,136 @@
-# Rot13.js
+# ROT13 Usage
 
-A tiny, dependency‑free ROT13 algorithm class that **extends** your `ReverseEngineer` container. It provides a symmetric substitution cipher (A↔N, B↔O, …) with a consistent API:
-
-- `init()` – optional initialization  
-- `addForwardAlgorithm()` – apply ROT13  
-- `addReverseAlgorithm()` – same as forward; ROT13 is its own inverse  
-
-Supports **strings** and **Uint8Array** inputs.  
-String mode rotates alphabetic characters A–Z/a–z.  
-Byte mode rotates ASCII letters only.
+Use the **Rot13** algorithm directly in the browser with native ES Modules.
 
 ---
 
-## Table of Contents
+## ✅ Requirements
+- A modern browser (ES Modules support).
+- Serve files over **HTTP(S)** (not `file://`) so module imports work consistently.
+- Your project should include:
+  - `./algorithms/Rot13/Rot13.js`
+  - `./algorithms/CaesarCipher/CaesarCipher.js` (Rot13 depends on this)
+  - `./ReverseEngineer.js`
 
-- [Rot13.js](#rot13js)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Quick Start](#quick-start)
-  - [API](#api)
-    - [Class: `Rot13`](#class-rot13)
-      - [Properties](#properties)
-      - [Methods](#methods)
-  - [Usage Patterns](#usage-patterns)
-    - [Strings](#strings)
-    - [Bytes (Uint8Array)](#bytes-uint8array)
-    - [Using With ReverseEngineer](#using-with-reverseengineer)
-  - [Examples](#examples)
-    - [Browser Example](#browser-example)
-    - [Node Buffer Example](#node-buffer-example)
-  - [Troubleshooting](#troubleshooting)
-  - [FAQ](#faq)
-  - [Performance Notes](#performance-notes)
-  - [Security Notes](#security-notes)
-  - [Testing](#testing)
-  - [Versioning](#versioning)
-  - [License](#license)
+> **Note:** Ensure there are **no extra spaces** in your import paths (e.g., `Rot13 .js` will fail). Also verify the **CaesarCipher** path matches what `Rot13.js` imports.
 
 ---
 
-## Features
-
-- 🔁 **Symmetric** — forward and reverse are identical  
-- 🧩 **Pluggable** — registers into your existing `ReverseEngineer` system  
-- 🧵 **Type‑preserving** — outputs the same type as the input  
-- 🧼 **Safe** — non‑alpha characters preserved  
-- 🌍 **Works everywhere** — Node.js & browser‑compatible  
-
----
-
-## Prerequisites
-- The `ReverseEngineer` class from your project (and optionally `CryptoUtils`)
-
----
-
-## Installation
-
-If Rot13.js is part of your project:
-
-```js
-import { Rot13 } from "./Rot13.js";
-import { ReverseEngineer, CryptoUtils } from "./ReverseEngineer.js";
+## 📁 Recommended Project Structure
 ```
-
-No external dependencies are required.
-
----
-
-## Quick Start
-
-```js
-import { ReverseEngineer, CryptoUtils } from "./ReverseEngineer.js";
-import { Rot13 } from "./Rot13.js";
-
-const RE = new ReverseEngineer().getInstance();
-RE.add(Rot13);
-
-RE.init("Rot13"); // optional (Rot13 will self-init on first use)
-
-console.log(RE.forward("Rot13", "Hello, World!"));
-// → "Uryyb, Jbeyq!"
-
-console.log(RE.reverse("Rot13", "Uryyb, Jbeyq!"));
-// → "Hello, World!"
+/your-project
+  /algorithms
+    /CaesarCipher
+      CaesarCipher.js
+    /Rot13
+      Rot13.js
+  ReverseEngineer.js
+  index.html
 ```
 
 ---
 
-## API
-
-### Class: `Rot13`
-
-#### Properties
-- `version` – Algorithm version (e.g., `"1.0.0"`)  
-- `description` – Human‑readable description  
-
-#### Methods
-- **`init(): void`**  
-  Prepares the algorithm (idempotent).  
-
-- **`addForwardAlgorithm(input: string | Uint8Array): string | Uint8Array`**  
-  Applies ROT13 to strings or `Uint8Array`.  
-  Returns the same type as given.
-
-- **`addReverseAlgorithm(input: string | Uint8Array): string | Uint8Array`**  
-  Identical to forward — ROT13 is symmetric.  
-
-> These method names match the `ReverseEngineer` container’s expectations and are automatically bound when you call `RE.add(Rot13)`.
-
----
-
-## Usage Patterns
-
-### Strings
-
-```js
-const encoded = RE.forward("Rot13", "Attack at Dawn!");
-// "Nggnpx ng Qnja!"
-
-const decoded = RE.reverse("Rot13", encoded);
-// "Attack at Dawn!"
-```
-
-### Bytes (Uint8Array)
-
-```js
-const bytesIn  = CryptoUtils.utf8ToBytes("Attack at Dawn!");
-const bytesOut = RE.forward("Rot13", bytesIn);
-
-console.log(CryptoUtils.bytesToUtf8(bytesOut));
-// "Nggnpx ng Qnja!"
-```
-
-### Using With ReverseEngineer
-
-```js
-const RE = new ReverseEngineer().getInstance();
-
-RE.add(Rot13);
-RE.init("Rot13"); // optional
-
-console.log(RE.list());  
-// ["Rot13"]
-
-// You can reference the algorithm by class or by name:
-const out1 = RE.forward(Rot13, "Hello");
-const back1 = RE.reverse(Rot13, out1);
-
-const out2 = RE.forward("Rot13", "Hello");
-const back2 = RE.reverse("Rot13", out2);
-```
-
----
-
-
-## Examples
-
-### Browser Example
+## 🚀 Quick Start (HTML + ES Modules)
+Create an `index.html` and open it via a local HTTP server.
 
 ```html
-<input id="txt" placeholder="Type text..." />
-<pre id="out"></pre>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ROT13 Demo (Browser)</title>
+  </head>
+  <body>
+    <h1>ROT13 Demo (Browser)</h1>
 
-<script type="module">
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { Rot13 } from "./Rot13.js";
+    <script type="module">
+      import { Rot13 } from "./algorithms/Rot13/Rot13.js";
+      import { ReverseEngineer } from "./ReverseEngineer.js";
 
-const RE = new ReverseEngineer().getInstance().add(Rot13);
+      const engineer = new ReverseEngineer();
+      engineer.getInstance();
+      engineer.add(Rot13);
 
-document.getElementById("txt").addEventListener("input", (e) => {
-  document.getElementById("out").textContent =
-    RE.forward("Rot13", e.target.value);
-});
-</script>
+      // No initialization parameters required
+      engineer.init(Rot13);
+
+      // ✅ Encode
+      const encoded = engineer.forward(Rot13, "Hello, World!");
+      console.log("ROT13 Encoded:", encoded); // Uryyb, Jbeyq!
+
+      // ✅ Decode (ROT13 is its own inverse)
+      const decoded = engineer.reverse(Rot13, encoded);
+      console.log("ROT13 Decoded:", decoded); // Hello, World!
+
+      // Another example
+      console.log(engineer.forward(Rot13, "Attack at dawn")); // Nggnpx ng qnja
+      console.log(engineer.reverse(Rot13, "Nggnpx ng qnja")); // Attack at dawn
+    </script>
+
+    <!-- Alternative: Use the class directly (without the manager) -->
+    <!--
+    <script type="module">
+      import { Rot13 } from "./algorithms/Rot13/Rot13.js";
+
+      const rot = new Rot13();
+      rot.init(); // logs that Rot13 initialized
+
+      const encoded = rot.addForwardAlgorithm("Hello, World!");
+      const decoded = rot.addReverseAlgorithm(encoded);
+
+      console.log({ encoded, decoded });
+    </script>
+    -->
+  </body>
+</html>
 ```
 
-### Node Buffer Example
+---
 
+## 🔎 About the Algorithm
+- **What it is**: ROT13 is a Caesar cipher with a fixed shift of **13** over the English alphabet. Applying ROT13 **twice** returns the original text.
+- **Behavior**: Letters `A–Z`/`a–z` are rotated by 13 positions; **non‑letters are preserved**; **case is preserved**.
+- **Dependency**: This implementation delegates to the `CaesarCipher` class with a shift of `13`.
+
+---
+
+## 🌐 Serve Over HTTP(S)
+Use any simple static server, for example with Python:
+
+```bash
+# From the project root
+python3 -m http.server 8080
+# Then open http://localhost:8080 in your browser
+```
+
+---
+
+## 🧩 API Quick Reference
+- `engineer.add(Rot13)` → registers the algorithm.
+- `engineer.init(Rot13)` → no parameters required.
+- `engineer.forward(Rot13, text)` → returns ROT13‑encoded string.
+- `engineer.reverse(Rot13, text)` → returns decoded string (same as encoding again).
+
+---
+
+## ⚠️ Common Pitfalls & Fixes
+- **Missing dependency** → Ensure `./algorithms/CaesarCipher/CaesarCipher.js` exists and the import path in `Rot13.js` is correct.
+- **Input type** → Pass a **string**. If you have bytes (`Uint8Array`), convert to/from string explicitly using `TextEncoder`/`TextDecoder` before/after calling ROT13.
+- **Non‑English alphabets** → Only `A–Z`/`a–z` are rotated. Characters with diacritics or from other scripts are left unchanged.
+
+---
+
+## 🧪 String/Bytes Helpers
 ```js
-import { ReverseEngineer, CryptoUtils } from "./ReverseEngineer.js";
-import { Rot13 } from "./Rot13.js";
-
-const RE = new ReverseEngineer().getInstance().add(Rot13);
-
-const buf = Buffer.from("Server Logs 2026!", "utf8");
-const bytes = new Uint8Array(buf);
-
-const rotated = RE.forward("Rot13", bytes);
-
-console.log(Buffer.from(rotated).toString());
-// "Freire Ybtf 2026!"
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+const bytes = enc.encode("Hello, World!");
+const text  = dec.decode(bytes);
 ```
 
 ---
 
-## Troubleshooting
-
-- **Error: `X has not been instanced`**  
-  → Call `RE.add(Rot13)` before using it (and optionally `RE.init("Rot13")`).
-
-- **Not rotating accented characters**  
-  → ROT13 is defined only for ASCII A–Z/a–z.
-
-- **Type errors**  
-  → Ensure the input is either a **string** or **Uint8Array**.
-
----
-
-## FAQ
-
-**Is ROT13 encryption?**  
-No — it is a trivial substitution cipher suitable only for lightweight obfuscation.
-
-**Why do forward and reverse do the same thing?**  
-ROT13 is an involution: applying it twice returns the original.
-
----
-
-## Performance Notes
-
-- Single‑pass implementation for both strings and byte arrays  
-- Fast enough for real‑time use and large buffers  
-- For extremely large inputs, consider chunking to reduce peak memory
-
----
-
-## Security Notes
-
-- ROT13 is **not secure** and should not be used for confidentiality  
-- For real encryption needs, use modern, vetted cryptography (e.g., AES‑GCM via WebCrypto)
-
----
-
-## Testing
-
-Example Jest test:
-
-```js
-test("roundtrip string", () => {
-  const RE = new ReverseEngineer().getInstance().add(Rot13);
-  const s = "Hello, World!";
-  expect(RE.reverse("Rot13", RE.forward("Rot13", s))).toBe(s);
-});
-
-test("roundtrip bytes", () => {
-  const RE = new ReverseEngineer().getInstance().add(Rot13);
-  const input = CryptoUtils.utf8ToBytes("Attack at Dawn!");
-  const out = RE.forward("Rot13", input);
-  const back = RE.reverse("Rot13", out);
-  expect(CryptoUtils.bytesToUtf8(back)).toBe("Attack at Dawn!");
-});
-```
-
----
-
-## Versioning
-
-Current version: **1.0.0**
-
----
-
-## License
-
-```
-MIT License
-```
+## ✅ Summary
+- Pure browser usage with native ES Modules.
+- Symmetric transform: encode = decode.
+- Depends on `CaesarCipher` internally; keep both files available with correct paths.

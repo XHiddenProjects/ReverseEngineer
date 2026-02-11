@@ -254,6 +254,4 @@ export const CryptoUtils = {
         const keyBytes = this.randomBytes(length);
         return this.bytesToB64(keyBytes);
     }
-
 };
-

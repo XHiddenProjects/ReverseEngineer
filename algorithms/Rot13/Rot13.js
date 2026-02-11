@@ -25,8 +25,8 @@ export const Rot13 = class extends ReverseEngineer {
 
     /**
      * Forward algorithm (ROT13)
-     * @param {string|Uint8Array} input - Text or bytes to transform
-     * @returns {string|Uint8Array} - ROT13-transformed output (type matches input)
+     * @param {string} input - Text to transform
+     * @returns {string} - ROT13-transformed output (type matches input)
      */
     addForwardAlgorithm(input) {
         return this.#CaesarCipher.addForwardAlgorithm(input,13);
@@ -34,8 +34,8 @@ export const Rot13 = class extends ReverseEngineer {
 
     /**
      * Reverse algorithm (ROT13 is its own inverse)
-     * @param {string|Uint8Array} input - Text or bytes to transform
-     * @returns {string|Uint8Array} - ROT13-transformed output (type matches input)
+     * @param {string} input - Text to transform
+     * @returns {string} - ROT13-transformed output (type matches input)
      */
     addReverseAlgorithm(input) {
         return this.#CaesarCipher.addReverseAlgorithm(input,13);

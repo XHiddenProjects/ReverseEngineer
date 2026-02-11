@@ -1,321 +1,146 @@
-# XOR.js
+# XOR Cipher Usage
 
-A tiny, dependency‑free **XOR cipher** class that **extends** your `ReverseEngineer` container. It applies a repeating‑key XOR over JavaScript string code units and can emit output as **text**, **hex**, or **binary**.
-
-- `init()` – optional initialization
-- `addForwardAlgorithm(message, key, returnAs?)` – **encrypt** (default `returnAs = 'text'`)
-- `addReverseAlgorithm(encoded, key, inputAs?)` – **decrypt** (default `inputAs = 'text'`)
-
-> ⚠️ **Not secure.** XOR with a repeating key is vulnerable to known‑plaintext and statistical attacks. Use modern cryptography (**AES‑GCM** via Web Crypto) for confidentiality.
+Use the **XOR** algorithm directly in the browser with native ES Modules.
 
 ---
 
-## Table of Contents
+## ✅ Requirements
+- A modern browser (ES Modules support).
+- Serve files over **HTTP(S)** (not `file://`) so module imports work consistently.
+- Your project should include:
+  - `./algorithms/XOR/XOR.js`
+  - `./ReverseEngineer.js`
 
-- [XOR.js](#xorjs)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Quick Start](#quick-start)
-  - [API](#api)
-    - [Class: `XOR`](#class-xor)
-      - [Properties](#properties)
-      - [Methods](#methods)
-  - [Usage Patterns](#usage-patterns)
-    - [Text ⇄ Text](#text--text)
-    - [Text ⇄ Hex](#text--hex)
-    - [Text ⇄ Binary](#text--binary)
-    - [Using With ReverseEngineer](#using-with-reverseengineer)
-  - [Examples](#examples)
-    - [Browser Example](#browser-example)
-    - [Node Example](#node-example)
-  - [Limitations \& Notes](#limitations--notes)
-  - [Troubleshooting](#troubleshooting)
-  - [FAQ](#faq)
-  - [Performance Notes](#performance-notes)
-  - [Security Notes](#security-notes)
-  - [Testing](#testing)
-  - [Versioning](#versioning)
-  - [License](#license)
+> **Note:** Ensure there are **no extra spaces** in your import paths (e.g., `XOR .js` will fail).
 
 ---
 
-## Features
-
-- 🔁 **Bidirectional & symmetric** — same operation for encrypt/decrypt with the same key
-- 🧩 **Pluggable** — integrates with your `ReverseEngineer` container
-- 🔀 **Flexible I/O** — emit/accept **text**, **hex**, or **binary** (8‑bit string) representations
-- 🧵 **Repeating key** — key cycles automatically across the message length
-- 🌍 **Works everywhere** — Browser & Node, no external dependencies
-
----
-
-## Prerequisites
-- `ReverseEngineer` class from your project
-- Standard JS runtime (no external deps)
-
----
-
-## Installation
-
-If `XOR.js` is part of your project:
-
-```js
-import { XOR } from "./XOR.js";
-import { ReverseEngineer } from "./ReverseEngineer.js";
+## 📁 Recommended Project Structure
 ```
-
-No external dependencies are required.
-
----
-
-## Quick Start
-
-```js
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { XOR } from "./XOR.js";
-
-const RE = new ReverseEngineer().getInstance();
-RE.add(XOR);
-RE.init("XOR"); // optional
-
-const key = "secret";
-
-// Text → Text
-const encText = RE.forward("XOR", "Hello, World!", key, "text");
-const decText = RE.reverse("XOR", encText, key, "text");
-
-// Text → Hex → Text
-const encHex = RE.forward("XOR", "Hello, World!", key, "hex");
-const decFromHex = RE.reverse("XOR", encHex, key, "hex");
-
-// Text → Binary → Text
-const encBin = RE.forward("XOR", "Hello, World!", key, "binary");
-const decFromBin = RE.reverse("XOR", encBin, key, "binary");
+/your-project
+  /algorithms
+    /XOR
+      XOR.js
+  ReverseEngineer.js
+  index.html
 ```
 
 ---
 
-## API
-
-### Class: `XOR`
-
-#### Properties
-- `version` – Algorithm version (e.g., `"1.0.0"`)
-- `description` – Human‑readable description
-
-#### Methods
-- **`addForwardAlgorithm(message: string, key: string, returnAs: 'text' | 'hex' | 'binary' = 'text'): string`**  
-  Encrypts `message` by XORing each character code with the corresponding (repeating) key character code. Output format options:
-  - `text`: returns a JS string made from the XORed code units
-  - `hex`: returns a lowercase hex string (**two digits per byte**) of the XORed code units
-  - `binary`: returns an 8‑bit binary string (**8 chars per byte**) of the XORed code units
-
-- **`addReverseAlgorithm(encoded: string, key: string, inputAs: 'text' | 'hex' | 'binary' = 'text'): string`**  
-  Decrypts by converting `encoded` from the specified representation back to raw XORed code units (if needed) and applying XOR with the same repeating `key`. Returns the **plaintext string**.
-
-> These method names match the `ReverseEngineer` container and are auto‑bound when you call `RE.add(XOR)`.
-
----
-
-## Usage Patterns
-
-### Text ⇄ Text
-
-```js
-const out = RE.forward("XOR", "Attack at Dawn!", "key", "text");
-const back = RE.reverse("XOR", out, "key", "text");
-```
-
-### Text ⇄ Hex
-
-```js
-const hexOut = RE.forward("XOR", "Token-123", "k", "hex");
-const plain   = RE.reverse("XOR", hexOut, "k", "hex");
-```
-
-### Text ⇄ Binary
-
-```js
-const binOut = RE.forward("XOR", "ABCD", "K", "binary"); // 8 bits per byte
-const plain  = RE.reverse("XOR", binOut, "K", "binary");
-```
-
-### Using With ReverseEngineer
-
-```js
-const RE = new ReverseEngineer().getInstance().add(XOR);
-RE.init("XOR"); // optional
-
-console.log(RE.list());
-// ["XOR"]
-
-const out = RE.forward("XOR", "Hello", "secret", "hex");
-const back = RE.reverse("XOR", out, "secret", "hex");
-```
-
----
-
-## Examples
-
-### Browser Example
+## 🚀 Quick Start (HTML + ES Modules)
+Create an `index.html` and open it via a local HTTP server.
 
 ```html
-<input id="txt" placeholder="Type text..." />
-<input id="key" placeholder="Key" />
-<select id="fmt">
-  <option value="text">text</option>
-  <option value="hex">hex</option>
-  <option value="binary">binary</option>
-</select>
-<pre id="out"></pre>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>XOR Cipher Demo (Browser)</title>
+  </head>
+  <body>
+    <h1>XOR Cipher Demo (Browser)</h1>
 
-<script type="module">
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { XOR } from "./XOR.js";
+    <script type="module">
+      import { XOR } from "./algorithms/XOR/XOR.js";
+      import { ReverseEngineer } from "./ReverseEngineer.js";
 
-const RE = new ReverseEngineer().getInstance().add(XOR);
+      const engineer = new ReverseEngineer();
+      engineer.getInstance();
+      engineer.add(XOR);
 
-const txt = document.getElementById("txt");
-const key = document.getElementById("key");
-const fmt = document.getElementById("fmt");
-const out = document.getElementById("out");
+      // No initialization parameters required
+      engineer.init(XOR);
 
-const run = () => {
-  const k = key.value || "";
-  out.textContent = k
-    ? RE.forward("XOR", txt.value, k, fmt.value)
-    : "(enter a key)";
-};
+      const message = "Hello, World!";
+      const key = "KEY";
 
-txt.addEventListener("input", run);
-key.addEventListener("input", run);
-fmt.addEventListener("change", run);
-</script>
-```
+      // ✅ Encode → text (default)
+      const encText = engineer.forward(XOR, message, key, /* returnAs */ 'text');
+      console.log("XOR Encoded (text):", encText);
 
-### Node Example
+      // ✅ Encode → hex
+      const encHex = engineer.forward(XOR, message, key, 'hex');
+      console.log("XOR Encoded (hex):", encHex);
 
-```js
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { XOR } from "./XOR.js";
+      // ✅ Encode → binary (8 bits per char)
+      const encBin = engineer.forward(XOR, message, key, 'binary');
+      console.log("XOR Encoded (binary):", encBin);
 
-const RE = new ReverseEngineer().getInstance().add(XOR);
+      // ✅ Decode from text
+      const decFromText = engineer.reverse(XOR, encText, key, /* inputAs */ 'text');
+      console.log("Decoded from text:", decFromText);
 
-const enc = RE.forward("XOR", "Server Logs 2026!", "secret", "hex");
-const dec = RE.reverse("XOR", enc, "secret", "hex");
-console.log(enc, dec);
-```
+      // ✅ Decode from hex
+      const decFromHex = engineer.reverse(XOR, encHex, key, 'hex');
+      console.log("Decoded from hex:", decFromHex);
 
----
+      // ✅ Decode from binary
+      const decFromBin = engineer.reverse(XOR, encBin, key, 'binary');
+      console.log("Decoded from binary:", decFromBin);
+    </script>
 
-## Limitations & Notes
+    <!-- Alternative: Use the class directly (without the manager) -->
+    <!--
+    <script type="module">
+      import { XOR } from "./algorithms/XOR/XOR.js";
 
-- **String code units, not bytes:** The implementation operates on **JavaScript UTF‑16 code units** via `charCodeAt`/`fromCharCode`. For **ASCII/Latin‑1** text this behaves like byte‑wise XOR. For characters with code points **> 255**, results may be surprising.
-- **Hex/Binary modes are 8‑bit:** When emitting **hex** or **binary**, each XORed code unit is converted to a single **byte** (the low 8 bits) and padded to 2 hex digits / 8 binary digits. Consequently, non‑ASCII text **won’t round‑trip** through hex/binary modes.
-- **Even/Multiple‑of‑8 length required:** For **hex** input, length must be **even**. For **binary** input, length must be a **multiple of 8**.
-- **Key management:** The key repeats; short keys leak patterns.
+      const xor = new XOR();
+      xor.init(); // logs that the algorithm loaded
 
-**Need robust, byte‑true XOR?** Convert your text to **UTF‑8 bytes** (e.g., `TextEncoder`), XOR bytes with a byte key, then encode (hex/Base64). That requires a different, byte‑oriented implementation.
+      const msg = "Hello, World!";
+      const key = "KEY";
 
----
-
-## Troubleshooting
-
-- **`You must include a message` / `You must include an encoded message`**  
-  Provide a non‑empty string.
-
-- **`You must include a key`**  
-  Provide a non‑empty key.
-
-- **Hex decode looks wrong**  
-  Ensure the hex string length is **even** and characters are valid hex.
-
-- **Binary decode looks wrong**  
-  Ensure the binary string length is a **multiple of 8** and only contains `0`/`1`.
-
----
-
-## FAQ
-
-**Is XOR secure if I keep the key secret?**  
-Not with a repeating key. It’s vulnerable to frequency and crib attacks. Use **one‑time pads** only with truly random, single‑use keys equal to message length (and careful handling) — impractical for most applications. Prefer **AES‑GCM** for real security.
-
-**Why does non‑ASCII text not round‑trip with hex/binary?**  
-Because the implementation collapses each JS code unit to 8 bits in those modes. Use a byte‑based approach for Unicode correctness.
-
-**Can I XOR binary files?**  
-Not directly with this string‑oriented class. Convert the data to a string carefully (or use a byte‑oriented XOR helper) to avoid corruption.
-
----
-
-## Performance Notes
-
-- Linear time over input length
-- Simple arithmetic/bitwise ops — very fast for typical scripting
-
----
-
-## Security Notes
-
-- This is **not** modern encryption. For confidentiality and integrity, use authenticated encryption like **AES‑GCM** and then encode for transport if needed (Base64/Base32/Hex).
-
----
-
-## Testing
-
-Example Jest tests:
-
-```js
-import { ReverseEngineer } from "./ReverseEngineer.js";
-import { XOR } from "./XOR.js";
-
-const setup = () => new ReverseEngineer().getInstance().add(XOR);
-
-test("text roundtrip", () => {
-  const RE = setup();
-  const s = "Hello, World!";
-  const out = RE.forward("XOR", s, "secret", "text");
-  const back = RE.reverse("XOR", out, "secret", "text");
-  expect(back).toBe(s);
-});
-
-test("hex roundtrip", () => {
-  const RE = setup();
-  const s = "Attack at Dawn!";
-  const out = RE.forward("XOR", s, "k", "hex");
-  const back = RE.reverse("XOR", out, "k", "hex");
-  expect(back).toBe(s);
-});
-
-test("binary roundtrip", () => {
-  const RE = setup();
-  const s = "ABCD";
-  const out = RE.forward("XOR", s, "K", "binary");
-  const back = RE.reverse("XOR", out, "K", "binary");
-  expect(back).toBe(s);
-});
-
-// invalid lengths
- test("bad hex length throws or decodes incorrectly (documented)", () => {
-  const RE = setup();
-  const badHex = "ABC"; // odd length
-  const back = RE.reverse("XOR", badHex, "k", "hex");
-  expect(typeof back).toBe("string"); // behavior depends on parsing; ensure your inputs are valid
-});
+      const hex = xor.addForwardAlgorithm(msg, key, 'hex');
+      const back = xor.addReverseAlgorithm(hex, key, 'hex');
+      console.log({ hex, back });
+    </script>
+    -->
+  </body>
+</html>
 ```
 
 ---
 
-## Versioning
-
-Current version: **1.0.0**
+## 🔎 About the Algorithm
+- **Operation**: Performs a character‑wise XOR between the message and a repeating key.
+- **Outputs**: `returnAs` can be `'text'` (default), `'hex'`, or `'binary'`.
+  - `'text'` returns a JavaScript string containing the raw XOR result (may include non‑printable characters).
+  - `'hex'` returns lowercase hexadecimal (`00`–`ff`) for each resulting byte.
+  - `'binary'` returns an 8‑bit binary string (`00000000`–`11111111`) per byte.
+- **Decoding**: Use `inputAs` to tell the decoder how to interpret the input: `'text'`, `'hex'`, or `'binary'`.
+- **Character model**: Uses `String.charCodeAt`/`fromCharCode`, so it XORs **UTF‑16 code units** (not Unicode code points). Astral symbols (outside BMP) take **two code units**.
 
 ---
 
-## License
+## 🌐 Serve Over HTTP(S)
+Use any simple static server, for example with Python:
 
+```bash
+# From the project root
+python3 -m http.server 8080
+# Then open http://localhost:8080 in your browser
 ```
-MIT License
-```
+
+---
+
+## 🧩 API Quick Reference
+- `engineer.add(XOR)` → registers the algorithm.
+- `engineer.init(XOR)` → no parameters required.
+- `engineer.forward(XOR, message, key, returnAs='text')` → returns XOR output as text/hex/binary.
+- `engineer.reverse(XOR, encode, key, inputAs='text')` → decodes from text/hex/binary back to the original message.
+
+---
+
+## ⚠️ Common Pitfalls & Fixes
+- **Missing inputs** → Both `message` (or `encode`) and `key` are required.
+- **Hex input length** → Must be **even**; the decoder reads two hex chars per byte.
+- **Binary input length** → Must be a multiple of **8**; the decoder reads 8 bits per byte.
+- **Invisible characters in `'text'` mode** → The XOR result may include non‑printable characters; prefer `'hex'` or `'binary'` for transport/storage.
+- **Unicode considerations** → Because it operates on UTF‑16 code units, different representations (e.g., emoji) can yield multi‑byte effects. For byte‑level control, convert to `Uint8Array` yourself before XORing (outside this class).
+
+---
+
+## ✅ Summary
+- Pure browser usage with native ES Modules.
+- Supports text, hex, and binary encodings for output/input.
+- Use the manager or instantiate the class directly.
