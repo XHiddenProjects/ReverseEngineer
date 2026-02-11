@@ -72,12 +72,12 @@ import { ReverseEngineer } from '.../path/to/ReverseEngineer.js';
 2. Create a _constant_ class for you algorithm
 ```js
 export const AlgorithmName = class extends ReverseEngineer{
+  //Configuration
+  description = 'Metadata description for the class';
+  version = 'Metadata version of the class';
   constructor(){
     super();
     this.getInstance();
-    //Configuration
-    description = 'Metadata description for the class';
-    version = 'Metadata version of the class';
   }
 }
 ```
