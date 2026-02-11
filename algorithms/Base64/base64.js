@@ -1,12 +1,12 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 
 export const Base64 = class extends ReverseEngineer {
-
+  //Configuration
+  description = "Encodes and decodes strings to/from Base64";
+  version = "1.0.0";
   constructor() {
     super();
     this.getInstance();
-    description = "Encodes and decodes strings to/from Base64";
-    version = "1.1.0";
   }
   /**
    * Execute on initialize
@@ -110,4 +110,4 @@ export const Base64 = class extends ReverseEngineer {
     // bytes -> UTF-8 string
     return new TextDecoder().decode(bytes);
   }
-};
+}

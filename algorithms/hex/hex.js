@@ -1,11 +1,11 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 export const Hex = class extends ReverseEngineer{
+    //Configuration
+    description = 'This will forward and reverse in Hexadecimal encoding'
+    version = '1.0.0';
     constructor(){
         super();
         this.getInstance();
-        // Configuration
-        description = 'This will forward and reverse in Hexadecimal encoding'
-        version = '1.0.0';
     }
     /**
      * Execute on initialize

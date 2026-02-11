@@ -1,8 +1,12 @@
 import { ReverseEngineer, CryptoUtils } from "../../ReverseEngineer.js";
 export const AESGCM = class  extends ReverseEngineer {
+  //Configuration
   version = "1.0.0";
   description = "AES-GCM using Web Crypto API (browser). Output = base64(iv|ciphertext+tag).";
-
+  constructor(){
+    super();
+    this.getInstance();
+  }
   /** @type {CryptoKey|null} */
   #key = null;
 
@@ -28,7 +32,7 @@ export const AESGCM = class  extends ReverseEngineer {
 
   /**
    * addForwardAlgorithm(plaintext, aad="")
-   * returns Promise<string base64>
+   * @returns Promise<string base64>
    */
   async addForwardAlgorithm(plaintext, aad = "") {
     if (!this.#key) throw new Error("Call init({keyB64}) first");
@@ -54,7 +58,7 @@ export const AESGCM = class  extends ReverseEngineer {
 
   /**
    * addReverseAlgorithm(packedB64, aad="")
-   * returns Promise<string plaintext>
+   * @returns Promise<string plaintext>
    */
   async addReverseAlgorithm(packedB64, aad = "") {
     if (!this.#key) throw new Error("Call init({keyB64}) first");

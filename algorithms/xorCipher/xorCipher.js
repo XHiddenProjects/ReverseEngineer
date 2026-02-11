@@ -1,11 +1,11 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 export const XOR = class extends ReverseEngineer{
+    // Configuration
+    description = 'This will forward and reverse in XOR Cipher'
+    version = '1.0.0';
     constructor(){
         super();
-        this.getInstance();
-        // Configuration
-        description = 'This will forward and reverse in XOR Cipher'
-        version = '1.0.0';
+        this.getInstance(); 
     }
     /**
      * Execute on initialize

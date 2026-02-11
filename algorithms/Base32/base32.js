@@ -1,12 +1,12 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 
 export const Base32 = class extends ReverseEngineer {
-
+  //Configuration
+  description = "Encodes and decodes strings to/from Base32";
+  version = "1.0.0";
   constructor() {
     super();
     this.getInstance();
-    description = "Encodes and decodes strings to/from Base32";
-    version = "1.1.0";
   }
   /**
    * Execute on initialize
@@ -120,4 +120,4 @@ export const Base32 = class extends ReverseEngineer {
 
     return new TextDecoder().decode(new Uint8Array(bytes));
   }
-};
+}

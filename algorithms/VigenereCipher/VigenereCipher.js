@@ -1,11 +1,10 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 export const VigenereCipher = class extends ReverseEngineer{
+    description = 'This will forward and reverse in Vigenère Cipher'
+    version = '1.0.0';
     constructor(){
         super();
         this.getInstance();
-        // Configuration
-        description = 'This will forward and reverse in Vigenère Cipher'
-        version = '1.0.0';
     }
     /**
      * Execute on initialize
