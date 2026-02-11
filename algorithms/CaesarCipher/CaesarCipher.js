@@ -2,7 +2,7 @@ import {ReverseEngineer} from '../../ReverseEngineer.js';
 export const CaesarCipher = class extends ReverseEngineer{
     // Configuration
     description = 'This will forward and reverse in Caesar Cipher'
-    version = '1.0.0';
+    version = '1.0.1';
     constructor(){
         super();
         this.getInstance();
@@ -34,8 +34,9 @@ export const CaesarCipher = class extends ReverseEngineer{
                 const newIndex = (index + shifts) % split.length
                 if(isUpperCase(message[msg]))
                     encode+=split[newIndex].toLocaleUpperCase();
-                if(isLowerCase(message[msg]))
+                else if(isLowerCase(message[msg]))
                     encode+=split[newIndex].toLocaleLowerCase();
+                else encode+=split[newIndex];
             }
         }
         return encode;
@@ -61,10 +62,9 @@ export const CaesarCipher = class extends ReverseEngineer{
                 const newIndex = (index - shifts + split.length) % split.length;
                 if(isUpperCase(encode[msg])){
                     decode+=split[newIndex].toLocaleUpperCase();
-                }
-                if(isLowerCase(encode[msg])){
+                }else if(isLowerCase(encode[msg])){
                     decode+=split[newIndex].toLocaleLowerCase();
-                }
+                }else decode+=split[newIndex]
             }
         }
         return decode;
