@@ -2,7 +2,7 @@
  * ReverseEngineer
  * @exports ReverseEngineer
  * @author XHiddenProjects
- * @version 1.1.3
+ * @version 1.2.0
  * @description Reverse Engineer uses existing algorithms to reverse it back
  * @see {@link https://github.com/XHiddenProjects/ReverseEngineer | Documentation}
  */
@@ -342,7 +342,7 @@ export const ReverseEngineer = class{
  * ReverseEngineer Crypto Utilities
  * @exports CryptoUtils
  * @author XHiddenProjects
- * @version 1.1.3
+ * @version 1.2.0
  * @description Reverse Engineer uses existing algorithms to reverse it back
  * @see {@link https://github.com/XHiddenProjects/ReverseEngineer | Documentation}
  */
@@ -404,7 +404,7 @@ export const CryptoUtils = {
  * ReverseEngineer GUI
  * @exports ReverseEngineerGUI
  * @author XHiddenProjects
- * @version 1.1.3
+ * @version 1.2.0
  * @description Generates a GUI interface for users
  * @see {@link https://github.com/XHiddenProjects/ReverseEngineer | Documentation}
  */
