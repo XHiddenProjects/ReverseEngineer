@@ -1,12 +1,8 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 import {CaesarCipher} from '../../algorithms/CaesarCipher/CaesarCipher.js';
-/**
- * Rot13 Algorithm
- * @description Applies ROT13 substitution cipher in both directions (symmetric).
- * @version 1.0.0
- */
 export const Rot13 = class extends ReverseEngineer {
-    version = "1.0.0";
+    name = "Rot13"
+    version = "1.0.1";
     description = "ROT13 substitution cipher (A↔N, B↔O, …). Symmetric for forward/reverse.";
     #CaesarCipher;
     constructor() {

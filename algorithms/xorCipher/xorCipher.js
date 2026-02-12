@@ -1,8 +1,9 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
-export const XOR = class extends ReverseEngineer{
+export const XORCipher = class extends ReverseEngineer{
     // Configuration
+    name = "XOR Cipher"
     description = 'This will forward and reverse in XOR Cipher'
-    version = '1.0.0';
+    version = '1.0.1';
     constructor(){
         super();
         this.getInstance(); 

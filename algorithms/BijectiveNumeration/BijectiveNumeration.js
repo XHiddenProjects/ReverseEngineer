@@ -1,8 +1,9 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 export const BijectiveNumeration = class extends ReverseEngineer{
     // Configuration
+    name = "Bijective Numeration"
     description = 'This will forward and reverse in Bijective Numeration'
-    version = '1.0.0';
+    version = '1.0.1';
     constructor(){
         super();
         this.getInstance();

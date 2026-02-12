@@ -1,8 +1,9 @@
 import {ReverseEngineer} from '../../ReverseEngineer.js';
 export const CaesarCipher = class extends ReverseEngineer{
     // Configuration
+    name = "Caesar Cipher"
     description = 'This will forward and reverse in Caesar Cipher'
-    version = '1.0.1';
+    version = '1.0.2';
     constructor(){
         super();
         this.getInstance();

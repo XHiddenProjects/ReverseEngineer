@@ -1,8 +1,9 @@
 import { ReverseEngineer, CryptoUtils } from "../../ReverseEngineer.js";
 export const AESGCM = class  extends ReverseEngineer {
   //Configuration
-  version = "1.0.0";
-  description = "AES-GCM using Web Crypto API (browser). Output = base64(iv|ciphertext+tag).";
+  name = "AES-GCM"
+  version = "1.0.1";
+  description = "AES-GCM using Web Crypto API (browser).";
   constructor(){
     super();
     this.getInstance();
@@ -52,7 +53,6 @@ export const AESGCM = class  extends ReverseEngineer {
     const packed = new Uint8Array(iv.length + ctBytes.length);
     packed.set(iv, 0);
     packed.set(ctBytes, iv.length);
-
     return CryptoUtils.bytesToB64(packed);
   }
 

@@ -1,0 +1,239 @@
+/* ==================================================
+   ReverseEngineer Theme (Auto / Dark / Light)
+   - Fixes: light mode background remained dark
+   - Approach: background uses --re-app-bg which switches per theme
+   ================================================== */
+:root,
+:host {
+  /* Palette (default: DARK) */
+  --re-bg:             #0f172a; /* slate-900 */
+  --re-surface:        #111827; /* gray-900 */
+  --re-surface-2:      #0b1220; /* deep navy */
+  --re-elev:           #111827; /* card bg */
+  --re-border:         #243244; /* slate-700-ish */
+  --re-text:           #e5e7eb; /* gray-200 */
+  --re-text-muted:     #9ca3af; /* gray-400 */
+  --re-accent:         #60a5fa; /* blue-400 */
+  --re-accent-strong:  #3b82f6; /* blue-500 */
+  --re-danger:         #ef4444; /* red-500 */
+  --re-danger-700:     #b91c1c; /* red-700 */
+  --re-ok:             #10b981; /* emerald-500 */
+  --re-focus:          #f59e0b; /* amber-500 */
+
+  /* Radii & Shadows */
+  --re-radius:         12px;
+  --re-radius-sm:      10px;
+  --re-shadow:         0 10px 30px rgba(0,0,0,0.4);
+  --re-inset:          inset 0 1px 0 rgba(255,255,255,0.03);
+
+  /* Typography */
+  --re-font:           ui-sans-serif, -apple-system, Segoe UI, Roboto, Inter, Arial, system-ui, "Apple Color Emoji", "Segoe UI Emoji";
+  --re-font-mono:      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  /* Sizing */
+  --re-maxw:           1200px;
+  --re-sidebar-w:      320px;
+  --re-gutter:         16px;
+
+  /* App background token (DARK default) */
+  --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
+               radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
+               linear-gradient(180deg, #020617 0%, #00030d 100%);
+}
+
+/* Explicit DARK mode */
+:root[data-theme="dark"], :host([data-theme="dark"]) {
+  --re-bg:#0f172a; --re-surface:#111827; --re-surface-2:#0b1220; --re-elev:#111827;
+  --re-border:#243244; --re-text:#e5e7eb; --re-text-muted:#9ca3af;
+  --re-accent:#60a5fa; --re-accent-strong:#3b82f6; --re-danger:#ef4444;
+  --re-danger-700:#b91c1c; --re-ok:#10b981; --re-focus:#f59e0b;
+  --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
+               radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
+               linear-gradient(180deg, #020617 0%, #00030d 100%);
+}
+
+/* Explicit LIGHT mode */
+:root[data-theme="light"], :host([data-theme="light"]) {
+  --re-bg:#f8fafc; --re-surface:#ffffff; --re-surface-2:#f1f5f9; --re-elev:#ffffff;
+  --re-border:#e5e7eb; --re-text:#0f172a; --re-text-muted:#475569;
+  --re-accent:#2563eb; --re-accent-strong:#1d4ed8; --re-danger:#dc2626;
+  --re-danger-700:#991b1b; --re-ok:#059669; --re-focus:#f59e0b;
+  /* LIGHT app background */
+  --re-app-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+/* AUTO: system LIGHT (only when no data-theme is set) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]), :host(:not([data-theme])) {
+    --re-bg:#f8fafc; --re-surface:#ffffff; --re-surface-2:#f1f5f9; --re-elev:#ffffff;
+    --re-border:#e5e7eb; --re-text:#0f172a; --re-text-muted:#475569;
+    --re-accent:#2563eb; --re-accent-strong:#1d4ed8; --re-danger:#dc2626;
+    --re-danger-700:#991b1b; --re-ok:#059669; --re-focus:#f59e0b;
+    --re-app-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  }
+}
+
+/* AUTO: system DARK (only when no data-theme is set) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]), :host(:not([data-theme])) {
+    --re-bg: #0b0f1b;
+    --re-surface: #0e1525;
+    --re-surface-2: #0b1220;
+    --re-elev: #0d1220;
+    --re-border: #1a2332;
+    --re-text: #e5e7eb;
+    --re-text-muted: #9ca3af;
+    --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
+                 radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
+                 linear-gradient(180deg, #020617 0%, #00030d 100%);
+  }
+}
+
+/* ========================= Base ========================= */
+.reverse-engineer-gui {
+  box-sizing: border-box;
+  color: var(--re-text);
+  font-family: var(--re-font);
+  background: var(--re-app-bg);
+  min-height: 100vh;
+  padding: clamp(12px, 2vw, 24px);
+}
+
+.re-gui-shell {
+  max-width: var(--re-maxw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--re-gutter);
+}
+
+/* ===================== Header/Nav ====================== */
+.re-gui-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border: 1px solid var(--re-border);
+  border-radius: var(--re-radius);
+  box-shadow: var(--re-inset), var(--re-shadow);
+  padding: 14px 16px;
+}
+
+.re-brand { display: flex; align-items: center; gap: 10px; }
+
+.re-logo {
+  width: 34px; height: 34px; display: inline-grid; place-items: center;
+  background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(37,99,235,0.15));
+  border: 1px solid var(--re-border); border-radius: 8px;
+  color: var(--re-accent); font-weight: 700;
+}
+
+.re-title { font-size: 18px; line-height: 1.2; margin: 0; color: var(--re-text); letter-spacing: 0.2px; }
+
+.re-actions { display: flex; gap: 8px; }
+
+/* ===================== Main Layout ===================== */
+.re-gui-main { display: grid; grid-template-columns: minmax(240px, var(--re-sidebar-w)) 1fr; gap: var(--re-gutter); }
+@media (max-width: 900px) { .re-gui-main { grid-template-columns: 1fr; } }
+
+/* ======================= Sidebar ======================= */
+.re-sidebar { display: grid; grid-template-rows: auto 1fr; gap: var(--re-gutter); }
+
+.re-search {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border: 1px solid var(--re-border);
+  border-radius: var(--re-radius);
+  padding: 12px;
+  box-shadow: var(--re-inset), var(--re-shadow);
+}
+
+.re-search-input {
+  width: 100%; background: var(--re-surface); color: var(--re-text);
+  border: 1px solid var(--re-border); border-radius: 10px; padding: 10px 12px; outline: none;
+}
+.re-search-input:focus { border-color: var(--re-accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--re-accent) 35%, transparent); }
+
+.re-list-wrap {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border: 1px solid var(--re-border); border-radius: var(--re-radius);
+  box-shadow: var(--re-inset), var(--re-shadow);
+  padding: 8px; min-height: 240px; display: grid; grid-template-rows: 1fr;
+}
+
+.re-algo-list { list-style: none; margin: 0; padding: 4px; overflow: auto; display: grid; gap: 6px; }
+
+.re-empty { color: var(--re-text-muted); font-size: 14px; padding: 10px 12px; }
+
+.re-algo-item {
+  background: var(--re-surface); border: 1px solid var(--re-border); border-radius: 10px;
+  padding: 10px 12px; cursor: pointer; outline: none;
+  transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.re-algo-item:hover { border-color: var(--re-accent); background: color-mix(in oklab, var(--re-surface) 80%, var(--re-accent) 20%); }
+.re-algo-item[aria-selected="true"] { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(37,99,235,0.08)); border-color: var(--re-accent-strong); }
+.re-algo-item:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--re-focus) 45%, transparent); }
+
+/* ====================== Workspace ====================== */
+.re-workspace { display: grid; gap: var(--re-gutter); align-content: start; }
+
+.re-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border: 1px solid var(--re-border); border-radius: var(--re-radius);
+  box-shadow: var(--re-inset), var(--re-shadow); padding: 14px;
+}
+
+.re-panel-title { margin: 0 0 10px 0; font-size: 16px; color: var(--re-text); letter-spacing: 0.2px; }
+
+.re-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.re-col-span { grid-column: 1 / -1; }
+
+.re-label { display: block; color: var(--re-text-muted); font-size: 12px; margin-bottom: 6px; }
+
+.re-kv .re-value { color: var(--re-text); font-weight: 600; letter-spacing: 0.2px; }
+
+/* ======================== Form ======================== */
+.re-form { display: grid; gap: 14px; }
+.re-field-row { display: grid; gap: 12px; }
+
+.re-input { background: var(--re-surface); color: var(--re-text); border: 1px solid var(--re-border); border-radius: var(--re-radius-sm); padding: 10px 12px; outline: none; width: calc(100% - 30px); }
+.re-input:focus { border-color: var(--re-accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--re-accent) 35%, transparent); }
+
+.re-textarea { resize: vertical; min-height: 90px; }
+
+/* ================ Segmented control =================== */
+.re-seg { display: inline-flex; background: var(--re-surface); border: 1px solid var(--re-border); border-radius: 10px; overflow: hidden; }
+.re-seg-item { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-right: 1px solid var(--re-border); cursor: pointer; user-select: none; }
+.re-seg-item:last-child { border-right: none; }
+.re-seg-item input { accent-color: var(--re-accent); }
+
+.re-hint { color: var(--re-text-muted); font-size: 12px; margin: 6px 0 0 0; }
+
+/* ======================= Buttons ====================== */
+.re-btn { appearance: none; border: 1px solid var(--re-border); background: var(--re-surface); color: var(--re-text); padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease; }
+.re-btn:hover { border-color: var(--re-accent); background: color-mix(in oklab, var(--re-surface) 85%, var(--re-accent) 15%); }
+.re-btn:active { transform: translateY(1px); }
+.re-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.re-primary { background: linear-gradient(135deg, rgba(59,130,246,0.22), rgba(37,99,235,0.18)); border-color: var(--re-accent-strong); }
+.re-secondary { background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); }
+.re-danger { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(185,28,28,0.15)); border-color: var(--re-danger-700); }
+
+.re-actions-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ======================= Output ======================= */
+.re-code { margin: 0; padding: 12px; background: var(--re-surface-2); border: 1px solid var(--re-border); border-radius: var(--re-radius-sm); color: var(--re-text); font-family: var(--re-font-mono); font-size: 13px; line-height: 1.5; overflow: auto; min-height: 90px; }
+
+/* =============== Accessibility focus ================== */
+:where(.reverse-engineer-gui) :focus-visible { outline: 3px solid color-mix(in oklab, var(--re-focus) 45%, transparent); outline-offset: 2px; }
+
+/* ===================== Small tweaks =================== */
+code { font-family: var(--re-font-mono); color: var(--re-accent); }
+
+/* ====== Icon-only Theme Toggle (sun/moon/auto) ======== */
+.re-icon-btn { width: 38px; height: 38px; padding: 0; display: inline-grid; place-items: center; }
+.re-icon { width: 18px; height: 18px; color: var(--re-text); }
+.re-icon-btn:hover .re-icon { color: color-mix(in oklab, var(--re-text) 70%, var(--re-accent) 30%); }
+.re-theme-toggle .icon-auto, .re-theme-toggle .icon-sun, .re-theme-toggle .icon-moon { display: none; }
+.re-theme-toggle[data-mode="auto"]  .icon-auto { display: inline; }
+.re-theme-toggle[data-mode="light"] .icon-sun  { display: inline; }
+.re-theme-toggle[data-mode="dark"]  .icon-moon { display: inline; }

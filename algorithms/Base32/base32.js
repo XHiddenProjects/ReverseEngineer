@@ -2,8 +2,9 @@ import { ReverseEngineer } from "../../ReverseEngineer.js";
 
 export const Base32 = class extends ReverseEngineer {
   //Configuration
+  name = "Base32"
   description = "Encodes and decodes strings to/from Base32";
-  version = "1.0.0";
+  version = "1.0.1";
   constructor() {
     super();
     this.getInstance();
