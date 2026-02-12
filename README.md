@@ -74,6 +74,7 @@ import { ReverseEngineer } from '.../path/to/ReverseEngineer.js';
 ```js
 export const AlgorithmName = class extends ReverseEngineer{
   //Configuration
+  name = 'Metadata name for the class';
   description = 'Metadata description for the class';
   version = 'Metadata version of the class';
   constructor(){
@@ -132,4 +133,18 @@ CryptoUtils.bytesToUtf8(str);
 **generateB64Key** Generates a Base64 key
 ```js
 CryptoUtils.generateB64Key(length);
+```
+
+## GUI
+To enter the the GUI mode, use this code below
+```js
+import { ReverseEngineerGUI } from './ReverseEngineer.js';
+// Import any algorithms you wish to add
+const gui = new ReverseEngineerGUI();
+gui.setTheme(theme='default');
+gui.build({
+    title: string||'Reverse Engineer';
+    mount: HTMLElement||document.body;
+    algos: Object[];
+});
 ```
