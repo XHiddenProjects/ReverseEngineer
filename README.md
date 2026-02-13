@@ -77,6 +77,29 @@ export const AlgorithmName = class extends ReverseEngineer{
   name = 'Metadata name for the class';
   description = 'Metadata description for the class';
   version = 'Metadata version of the class';
+  static UI_POLICY: { // Creates a policy for the GUI
+    requiresInit: boolean,
+    directions: {
+        init: {
+            input: boolean,
+            args: boolean,
+            inputPh: string,
+            argsPh: string
+        };
+        forward: {
+            input: boolean,
+            args: boolean,
+            inputPh: string,
+            argsPh: string
+        };
+        reverse: {
+            input: boolean,
+            args: boolean,
+            inputPh: string,
+            argsPh: string
+        };
+    }
+  }
   constructor(){
     super();
     this.getInstance();
