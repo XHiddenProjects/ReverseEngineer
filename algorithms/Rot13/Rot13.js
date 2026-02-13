@@ -2,9 +2,17 @@ import { ReverseEngineer } from "../../ReverseEngineer.js";
 import {CaesarCipher} from '../../algorithms/CaesarCipher/CaesarCipher.js';
 export const Rot13 = class extends ReverseEngineer {
     name = "Rot13"
-    version = "1.0.1";
+    version = "1.1.0";
     description = "ROT13 substitution cipher (A↔N, B↔O, …). Symmetric for forward/reverse.";
     #CaesarCipher;
+    static UI_POLICY = {
+        requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:false, inputPh:'Text to transform with ROT13', argsPh:'—' },
+          reverse:{ input:true, args:false, inputPh:'Text to transform with ROT13', argsPh:'—' }
+        }
+    }
     constructor() {
         super();
         this.#CaesarCipher = new CaesarCipher();

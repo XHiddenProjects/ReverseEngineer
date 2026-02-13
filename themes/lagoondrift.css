@@ -1,34 +1,30 @@
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 /* ==================================================
-   ReverseEngineer Theme (Auto / Dark / Light)
-   - Fixes: light mode background remained dark
-   - Approach: background uses --re-app-bg which switches per theme
+   Lagoon Drift Theme (Auto / Dark / Light)
+   - Palette: teal/cyan with soft emerald cues
+   - Fix: light mode background uses --re-app-bg correctly
+   - Drop-in replacement for your original theme
    ================================================== */
 :root,
 :host {
   /* Palette (default: DARK) */
-  --re-bg:             #0f172a; /* slate-900 */
-  --re-surface:        #111827; /* gray-900 */
-  --re-surface-2:      #0b1220; /* deep navy */
-  --re-elev:           #111827; /* card bg */
-  --re-border:         #243244; /* slate-700-ish */
-  --re-text:           #e5e7eb; /* gray-200 */
-  --re-text-muted:     #9ca3af; /* gray-400 */
-  --re-accent:         #60a5fa; /* blue-400 */
-  --re-accent-strong:  #3b82f6; /* blue-500 */
+  --re-bg:             #07141a; /* deep teal night */
+  --re-surface:        #0b1b22; /* ink teal */
+  --re-surface-2:      #07171f; /* abyss teal */
+  --re-elev:           #0d2028; /* raised card */
+  --re-border:         #1a313a; /* muted teal edge */
+  --re-text:           #e6f1f3; /* near white */
+  --re-text-muted:     #8fa3ad; /* cool gray-teal */
+  --re-accent:         #22d3ee; /* cyan-400 */
+  --re-accent-strong:  #06b6d4; /* cyan-500 */
   --re-danger:         #ef4444; /* red-500 */
   --re-danger-700:     #b91c1c; /* red-700 */
-  --re-ok:             #10b981; /* emerald-500 */
+  --re-ok:             #14b8a6; /* teal-500 */
   --re-focus:          #f59e0b; /* amber-500 */
 
   /* Radii & Shadows */
   --re-radius:         12px;
   --re-radius-sm:      10px;
-  --re-shadow:         0 10px 30px rgba(0,0,0,0.4);
+  --re-shadow:         0 10px 30px rgba(0,0,0,0.35);
   --re-inset:          inset 0 1px 0 rgba(255,255,255,0.03);
 
   /* Typography */
@@ -41,56 +37,62 @@
   --re-gutter:         16px;
 
   /* App background token (DARK default) */
-  --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
-               radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
-               linear-gradient(180deg, #020617 0%, #00030d 100%);
+  --re-app-bg:
+    radial-gradient(1000px 600px at -10% -20%, rgba(34,211,238,0.25) 0%, rgba(9,36,45,0.15) 35%, rgba(4,12,16,0) 60%),
+    radial-gradient(700px 350px at 110% 110%, rgba(16,185,129,0.18) 0%, rgba(7,23,31,0.25) 45%, rgba(4,12,16,0) 60%),
+    linear-gradient(180deg, #03151a 0%, #061b22 100%);
 }
 
 /* Explicit DARK mode */
 :root[data-theme="dark"], :host([data-theme="dark"]) {
-  --re-bg:#0f172a; --re-surface:#111827; --re-surface-2:#0b1220; --re-elev:#111827;
-  --re-border:#243244; --re-text:#e5e7eb; --re-text-muted:#9ca3af;
-  --re-accent:#60a5fa; --re-accent-strong:#3b82f6; --re-danger:#ef4444;
-  --re-danger-700:#b91c1c; --re-ok:#10b981; --re-focus:#f59e0b;
-  --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
-               radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
-               linear-gradient(180deg, #020617 0%, #00030d 100%);
+  --re-bg:#07141a; --re-surface:#0b1b22; --re-surface-2:#07171f; --re-elev:#0d2028;
+  --re-border:#1a313a; --re-text:#e6f1f3; --re-text-muted:#8fa3ad;
+  --re-accent:#22d3ee; --re-accent-strong:#06b6d4; --re-danger:#ef4444;
+  --re-danger-700:#b91c1c; --re-ok:#14b8a6; --re-focus:#f59e0b;
+  --re-app-bg:
+    radial-gradient(1000px 600px at -10% -20%, rgba(34,211,238,0.25) 0%, rgba(9,36,45,0.15) 35%, rgba(4,12,16,0) 60%),
+    radial-gradient(700px 350px at 110% 110%, rgba(16,185,129,0.18) 0%, rgba(7,23,31,0.25) 45%, rgba(4,12,16,0) 60%),
+    linear-gradient(180deg, #03151a 0%, #061b22 100%);
 }
 
 /* Explicit LIGHT mode */
 :root[data-theme="light"], :host([data-theme="light"]) {
-  --re-bg:#f8fafc; --re-surface:#ffffff; --re-surface-2:#f1f5f9; --re-elev:#ffffff;
-  --re-border:#e5e7eb; --re-text:#0f172a; --re-text-muted:#475569;
-  --re-accent:#2563eb; --re-accent-strong:#1d4ed8; --re-danger:#dc2626;
+  --re-bg:#f0fdf9; --re-surface:#ffffff; --re-surface-2:#ecfeff; --re-elev:#ffffff;
+  --re-border:#cfe8e6; --re-text:#0f172a; --re-text-muted:#4e6a74;
+  --re-accent:#0891b2; --re-accent-strong:#0e7490; --re-danger:#dc2626;
   --re-danger-700:#991b1b; --re-ok:#059669; --re-focus:#f59e0b;
   /* LIGHT app background */
-  --re-app-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --re-app-bg: linear-gradient(180deg, #ffffff 0%, #ecfeff 100%);
 }
 
 /* AUTO: system LIGHT (only when no data-theme is set) */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]), :host(:not([data-theme])) {
-    --re-bg:#f8fafc; --re-surface:#ffffff; --re-surface-2:#f1f5f9; --re-elev:#ffffff;
-    --re-border:#e5e7eb; --re-text:#0f172a; --re-text-muted:#475569;
-    --re-accent:#2563eb; --re-accent-strong:#1d4ed8; --re-danger:#dc2626;
+    --re-bg:#f0fdf9; --re-surface:#ffffff; --re-surface-2:#ecfeff; --re-elev:#ffffff;
+    --re-border:#cfe8e6; --re-text:#0f172a; --re-text-muted:#4e6a74;
+    --re-accent:#0891b2; --re-accent-strong:#0e7490; --re-danger:#dc2626;
     --re-danger-700:#991b1b; --re-ok:#059669; --re-focus:#f59e0b;
-    --re-app-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    --re-app-bg: linear-gradient(180deg, #ffffff 0%, #ecfeff 100%);
   }
 }
 
 /* AUTO: system DARK (only when no data-theme is set) */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]), :host(:not([data-theme])) {
-    --re-bg: #0b0f1b;
-    --re-surface: #0e1525;
-    --re-surface-2: #0b1220;
-    --re-elev: #0d1220;
-    --re-border: #1a2332;
-    --re-text: #e5e7eb;
-    --re-text-muted: #9ca3af;
-    --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
-                 radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
-                 linear-gradient(180deg, #020617 0%, #00030d 100%);
+    --re-bg: #08161c;
+    --re-surface: #0d1f27;
+    --re-surface-2: #0a1920;
+    --re-elev: #0e222a;
+    --re-border: #18323a;
+    --re-text: #e6f1f3;
+    --re-text-muted: #8fa3ad;
+    --re-accent: #22d3ee;
+    --re-accent-strong: #06b6d4;
+    --re-ok: #14b8a6;
+    --re-app-bg:
+      radial-gradient(1000px 600px at -10% -20%, rgba(34,211,238,0.25) 0%, rgba(9,36,45,0.15) 35%, rgba(4,12,16,0) 60%),
+      radial-gradient(700px 350px at 110% 110%, rgba(16,185,129,0.18) 0%, rgba(7,23,31,0.25) 45%, rgba(4,12,16,0) 60%),
+      linear-gradient(180deg, #03151a 0%, #061b22 100%);
   }
 }
 
@@ -128,7 +130,7 @@
 
 .re-logo {
   width: 34px; height: 34px; display: inline-grid; place-items: center;
-  background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(37,99,235,0.15));
+  background: linear-gradient(135deg, rgba(34,211,238,0.25), rgba(14,116,144,0.15));
   border: 1px solid var(--re-border); border-radius: 8px;
   color: var(--re-accent); font-weight: 700;
 }
@@ -175,7 +177,7 @@
   transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease;
 }
 .re-algo-item:hover { border-color: var(--re-accent); background: color-mix(in oklab, var(--re-surface) 80%, var(--re-accent) 20%); }
-.re-algo-item[aria-selected="true"] { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(37,99,235,0.08)); border-color: var(--re-accent-strong); }
+.re-algo-item[aria-selected="true"] { background: linear-gradient(135deg, rgba(34,211,238,0.12), rgba(14,116,144,0.08)); border-color: var(--re-accent-strong); }
 .re-algo-item:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--re-focus) 45%, transparent); }
 
 /* ====================== Workspace ====================== */
@@ -219,7 +221,7 @@
 .re-btn:active { transform: translateY(1px); }
 .re-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.re-primary { background: linear-gradient(135deg, rgba(59,130,246,0.22), rgba(37,99,235,0.18)); border-color: var(--re-accent-strong); }
+.re-primary { background: linear-gradient(135deg, rgba(34,211,238,0.22), rgba(14,116,144,0.18)); border-color: var(--re-accent-strong); }
 .re-secondary { background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); }
 .re-danger { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(185,28,28,0.15)); border-color: var(--re-danger-700); }
 
@@ -242,6 +244,7 @@ code { font-family: var(--re-font-mono); color: var(--re-accent); }
 .re-theme-toggle[data-mode="auto"]  .icon-auto { display: inline; }
 .re-theme-toggle[data-mode="light"] .icon-sun  { display: inline; }
 .re-theme-toggle[data-mode="dark"]  .icon-moon { display: inline; }
+
 /* ====== Copy to clipboard ======== */
 .re-copy.is-success{border: 1px solid #1f7a1f!important;}
 .re-copy.is-success svg { color: #1f7a1f!important; }
@@ -249,7 +252,6 @@ code { font-family: var(--re-font-mono); color: var(--re-accent); }
 .re-copy.is-error svg   { color: #b00020!important; }
 
 /* ====== Footer ======== */
-
 .re-footer {
   border-top: 1px solid var(--re-border, #e4e4e7);
   padding: .5rem .75rem;

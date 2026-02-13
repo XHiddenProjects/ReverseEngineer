@@ -2,7 +2,15 @@ import { ReverseEngineer } from "../../ReverseEngineer.js";
 export const VigenereCipher = class extends ReverseEngineer{
     name = "Vigenère Cipher"
     description = 'This will forward and reverse in Vigenère Cipher'
-    version = '1.0.2';
+    version = '1.1.0';
+    static UI_POLICY = {
+        requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:true, inputPh:'Plaintext to encrypt (letters preserved)', argsPh:`[key, characters?]\nDefaults: ["<your-key>", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]\nExamples:\n ["LEMON"]\n ["KEY", "abcdefghijklmnopqrstuvwxyz"]` },
+          reverse:{ input:true, args:true, inputPh:'Ciphertext to decrypt', argsPh:`[key, characters?] // must match forward\nExamples:\n ["LEMON"]` }
+        }
+    }
     constructor(){
         super();
         this.getInstance();

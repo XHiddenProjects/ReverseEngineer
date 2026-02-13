@@ -1,8 +1,16 @@
 import { ReverseEngineer } from "../../ReverseEngineer.js";
 export const RailFenceCipher = class extends ReverseEngineer {
     name = "Rail Fence Cipher"
-    version = "1.0.1";
+    version = "1.1.0";
     description = "Rail Fence cipher (zig-zag). Works best on letters/spaces; preserves chars.";
+    static UI_POLICY = {
+        requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:true, inputPh:'Plain text to encode (zig‑zag)', argsPh:`[rails?] // integer ≥ 2\nExamples:\n [3]\n [4]` },
+          reverse:{ input:true, args:true, inputPh:'Cipher text to decode (zig‑zag)', argsPh:`[rails?] // must match rails used to encode` }
+        }
+    }
     constructor(){
         super();
         this.getInstance();

@@ -4,7 +4,15 @@ export const Base32 = class extends ReverseEngineer {
   //Configuration
   name = "Base32"
   description = "Encodes and decodes strings to/from Base32";
-  version = "1.0.1";
+  version = "1.1.0";
+  static UI_POLICY = {
+    requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:true, inputPh:'Plain text to encode (RFC 4648 Base32)', argsPh:`[sanitize?, {"lower":true}]\nExamples:\n true\n [true, {"lower":true}]` },
+          reverse:{ input:true, args:true, inputPh:'Base32 to decode (case-insensitive; padding optional)', argsPh:`[isSanitized?]\nExamples:\n true` }
+        }
+  }
   constructor() {
     super();
     this.getInstance();

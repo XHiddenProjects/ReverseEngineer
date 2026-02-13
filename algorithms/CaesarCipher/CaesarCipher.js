@@ -3,7 +3,15 @@ export const CaesarCipher = class extends ReverseEngineer{
     // Configuration
     name = "Caesar Cipher"
     description = 'This will forward and reverse in Caesar Cipher'
-    version = '1.0.2';
+    version = '1.1.0';
+    static UI_POLICY = {
+        requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:true, inputPh:'Plaintext to shift (A‑Z / a‑z, others preserved)', argsPh:`[shifts?, characters?]\nDefaults: [1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]\nExamples:\n [13] // ROT13\n [3, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]\n [5, "abcdefghijklmnopqrstuvwxyz"]` },
+          reverse:{ input:true, args:true, inputPh:'Ciphertext to unshift', argsPh:`[shifts?, characters?] (must match what was used for forward)` }
+        }
+    }
     constructor(){
         super();
         this.getInstance();

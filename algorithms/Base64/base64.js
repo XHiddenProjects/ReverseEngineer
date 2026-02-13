@@ -4,7 +4,15 @@ export const Base64 = class extends ReverseEngineer {
   //Configuration
   name = "Base64"
   description = "Encodes and decodes strings to/from Base64";
-  version = "1.0.1";
+  version = "1.1.0";
+  static UI_POLICY = {
+    requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:true, inputPh:'Plain text to encode (UTF‑8)', argsPh:`[sanitize?, {"lower":false,"urlSafe":false}]\nExamples:\n true\n [true, {"urlSafe":true}]` },
+          reverse:{ input:true, args:true, inputPh:'Base64/Base64URL to decode', argsPh:`[isSanitized?, {"urlSafe":true}]\nExamples:\n true\n [true, {"urlSafe":true}]` }
+        }
+  }
   constructor() {
     super();
     this.getInstance();

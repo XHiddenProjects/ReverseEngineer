@@ -3,7 +3,15 @@ export const BijectiveNumeration = class extends ReverseEngineer{
     // Configuration
     name = "Bijective Numeration"
     description = 'This will forward and reverse in Bijective Numeration'
-    version = '1.0.1';
+    version = '1.1.0';
+    static UI_POLICY = {
+        requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:true, inputPh:'Non‑negative integer to encode (e.g., 0, 1, 26, …)', argsPh:`Optional alphabet (string). Default: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\nExamples:\n ["ABCDEFGHIJKLMNOPQRSTUVWXYZ"]\n ["abcdefghijklmnopqrstuvwxyz"]` },
+          reverse:{ input:true, args:true, inputPh:'Encoded bijective string (e.g., A, B, Z, AA, …)', argsPh:`Optional alphabet (string). Default: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"` }
+        }
+    }
     constructor(){
         super();
         this.getInstance();

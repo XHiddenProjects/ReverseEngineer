@@ -3,7 +3,15 @@ export const Hex = class extends ReverseEngineer{
     //Configuration
     name = "Hexadecimal"
     description = 'This will forward and reverse in Hexadecimal encoding'
-    version = '1.0.1';
+    version = '1.1.0';
+    static UI_POLICY = {
+        requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:false, inputPh:'Plain text → hex (lowercase, no spaces)', argsPh:'—' },
+          reverse:{ input:true, args:false, inputPh:'Hex string → text (pairs of hex digits)', argsPh:'—' }
+        }
+    }
     constructor(){
         super();
         this.getInstance();

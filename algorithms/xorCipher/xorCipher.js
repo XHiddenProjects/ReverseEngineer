@@ -3,7 +3,15 @@ export const XORCipher = class extends ReverseEngineer{
     // Configuration
     name = "XOR Cipher"
     description = 'This will forward and reverse in XOR Cipher'
-    version = '1.0.1';
+    version = '1.1.0';
+    static UI_POLICY = {
+        requiresInit:false,
+        directions:{
+          init:{ input:false, args:false, inputPh:'—', argsPh:'—' },
+          forward:{ input:true, args:true, inputPh:'Plaintext to XOR', argsPh:`[key, returnAs?]\nreturnAs: "text" | "hex" | "binary"\nExamples:\n ["secret"]\n ["secret", "hex"]\n ["secret", "binary"]` },
+          reverse:{ input:true, args:true, inputPh:'XOR data to decrypt (text/hex/binary)', argsPh:`[key, inputAs?]\ninputAs: "text" | "hex" | "binary"\nExamples:\n ["secret"]\n ["secret", "hex"]\n ["secret", "binary"]` }
+        }
+    }
     constructor(){
         super();
         this.getInstance(); 
