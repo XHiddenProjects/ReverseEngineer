@@ -3,7 +3,7 @@ ReverseEngineer is a ES6 JS library algorithm that developers can create their o
 
 ## What needs to be downloaded
 1. ReverseEngineer.js
-2. `algorithms` folder - This contains predefined.
+2. `ciphers`/`encoders`/`encryptions`/`hashing` folder - This contains predefined scripts.
 3. `themes` folder - Themes for the editor
 
 ## Installation
