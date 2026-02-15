@@ -74,9 +74,11 @@ import { ReverseEngineer } from '.../path/to/ReverseEngineer.js';
 ```js
 export const AlgorithmName = class extends ReverseEngineer{
   //Configuration
-  name = 'Metadata name for the class';
-  description = 'Metadata description for the class';
-  version = 'Metadata version of the class';
+  static name = 'Metadata name for the class';
+  static description = 'Metadata description for the class';
+  static version = 'Metadata version of the class';
+  static category = 'Metadata category for the algorithm';
+  static tags = ['Metadata tags for the algorithm'];
   static UI_POLICY: { // Creates a policy for the GUI
     requiresInit: boolean,
     directions: {
@@ -84,19 +86,22 @@ export const AlgorithmName = class extends ReverseEngineer{
             input: boolean,
             args: boolean,
             inputPh: string,
-            argsPh: string
+            argsPh: string,
+            allowFile: boolean
         };
         forward: {
             input: boolean,
             args: boolean,
             inputPh: string,
-            argsPh: string
+            argsPh: string,
+            allowFile: boolean
         };
         reverse: {
             input: boolean,
             args: boolean,
             inputPh: string,
-            argsPh: string
+            argsPh: string,
+            allowFile: boolean
         };
     }
   }
