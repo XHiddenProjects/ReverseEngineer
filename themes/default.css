@@ -11,39 +11,39 @@
 :root,
 :host {
   /* Palette (default: DARK) */
-  --re-bg:             #0f172a; /* slate-900 */
-  --re-surface:        #111827; /* gray-900 */
-  --re-surface-2:      #0b1220; /* deep navy */
-  --re-elev:           #111827; /* card bg */
-  --re-border:         #243244; /* slate-700-ish */
-  --re-text:           #e5e7eb; /* gray-200 */
+  --re-bg: #0f172a; /* slate-900 */
+  --re-surface:  #111827; /* gray-900 */
+  --re-surface-2:#0b1220; /* deep navy */
+  --re-elev:     #111827; /* card bg */
+  --re-border:   #243244; /* slate-700-ish */
+  --re-text:     #e5e7eb; /* gray-200 */
   --re-text-muted:     #9ca3af; /* gray-400 */
-  --re-accent:         #60a5fa; /* blue-400 */
+  --re-accent:   #60a5fa; /* blue-400 */
   --re-accent-strong:  #3b82f6; /* blue-500 */
-  --re-danger:         #ef4444; /* red-500 */
+  --re-danger:   #ef4444; /* red-500 */
   --re-danger-700:     #b91c1c; /* red-700 */
-  --re-ok:             #10b981; /* emerald-500 */
-  --re-focus:          #f59e0b; /* amber-500 */
+  --re-ok: #10b981; /* emerald-500 */
+  --re-focus:    #f59e0b; /* amber-500 */
 
   /* Radii & Shadows */
-  --re-radius:         12px;
-  --re-radius-sm:      10px;
-  --re-shadow:         0 10px 30px rgba(0,0,0,0.4);
-  --re-inset:          inset 0 1px 0 rgba(255,255,255,0.03);
+  --re-radius:   12px;
+  --re-radius-sm:10px;
+  --re-shadow:   0 10px 30px rgba(0,0,0,0.4);
+  --re-inset:    inset 0 1px 0 rgba(255,255,255,0.03);
 
   /* Typography */
-  --re-font:           ui-sans-serif, -apple-system, Segoe UI, Roboto, Inter, Arial, system-ui, "Apple Color Emoji", "Segoe UI Emoji";
-  --re-font-mono:      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --re-font:     ui-sans-serif, -apple-system, Segoe UI, Roboto, Inter, Arial, system-ui, "Apple Color Emoji", "Segoe UI Emoji";
+  --re-font-mono:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
   /* Sizing */
-  --re-maxw:           1200px;
-  --re-sidebar-w:      320px;
-  --re-gutter:         16px;
+  --re-maxw:     1200px;
+  --re-sidebar-w:320px;
+  --re-gutter:   16px;
 
   /* App background token (DARK default) */
   --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
-               radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
-               linear-gradient(180deg, #020617 0%, #00030d 100%);
+   radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
+   linear-gradient(180deg, #020617 0%, #00030d 100%);
 }
 
 /* Explicit DARK mode */
@@ -53,8 +53,8 @@
   --re-accent:#60a5fa; --re-accent-strong:#3b82f6; --re-danger:#ef4444;
   --re-danger-700:#b91c1c; --re-ok:#10b981; --re-focus:#f59e0b;
   --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
-               radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
-               linear-gradient(180deg, #020617 0%, #00030d 100%);
+   radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
+   linear-gradient(180deg, #020617 0%, #00030d 100%);
 }
 
 /* Explicit LIGHT mode */
@@ -89,8 +89,8 @@
     --re-text: #e5e7eb;
     --re-text-muted: #9ca3af;
     --re-app-bg: radial-gradient(1000px 600px at -10% -20%, rgba(43,91,250,0.25) 0%, rgba(38,33,82,0.15) 35%, rgba(4,8,18,0) 60%),
-                 radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
-                 linear-gradient(180deg, #020617 0%, #00030d 100%);
+     radial-gradient(700px 350px at 110% 110%, rgba(248,113,113,0.15) 0%, rgba(15,23,42,0.25) 45%, rgba(4,8,18,0) 60%),
+     linear-gradient(180deg, #020617 0%, #00030d 100%);
   }
 }
 
@@ -203,7 +203,7 @@
 .re-input { background: var(--re-surface); color: var(--re-text); border: 1px solid var(--re-border); border-radius: var(--re-radius-sm); padding: 10px 12px; outline: none; width: calc(100% - 30px); }
 .re-input:focus { border-color: var(--re-accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--re-accent) 35%, transparent); }
 
-.re-textarea { resize: vertical; min-height: 125px; }
+.re-textarea { resize: vertical; min-height: 145px; }
 
 /* ================ Segmented control =================== */
 .re-seg { display: inline-flex; background: var(--re-surface); border: 1px solid var(--re-border); border-radius: 10px; overflow: hidden; }
@@ -227,7 +227,7 @@
 
 /* ======================= Output ======================= */
 .re-code { margin: 0; padding: 12px; background: var(--re-surface-2); border: 1px solid var(--re-border); border-radius: var(--re-radius-sm); color: var(--re-text); font-family: var(--re-font-mono); font-size: 13px; line-height: 1.5; overflow: auto; min-height: 90px; }
-.re-code .re-code-content {text-wrap: auto;}
+.re-code .re-code-content {text-wrap: auto;overflow-wrap: anywhere;}
 /* =============== Accessibility focus ================== */
 :where(.reverse-engineer-gui) :focus-visible { outline: 3px solid color-mix(in oklab, var(--re-focus) 45%, transparent); outline-offset: 2px; }
 
@@ -261,4 +261,296 @@ code { font-family: var(--re-font-mono); color: var(--re-accent); }
 .re-footer a {
   color: inherit;
   text-decoration: underline;
+}
+
+
+.re-no-select{user-select: none; -ms-user-select: none; -moz-user-select: none; -ms-touch-select: none; -webkit-user-select: none;}
+
+
+/* ======== Sort bar ======== */
+.reverse-engineer-gui .re-sortbar {
+  display: flex; gap: .5rem; align-items: center; padding: .5rem .5rem 0;
+}
+
+.reverse-engineer-gui .re-group-header {
+  font-weight: 600;
+  opacity: .8;
+  padding: .25rem .5rem;
+  margin-top: .5rem;
+  border-top: 1px dashed var(--re-border, currentColor);
+}
+
+/* ======= File Upload (theme-aware) ======= */
+:where(.reverse-engineer-gui) {
+  /* Local, theme-aware tokens for the file UI */
+  --re-file-zone-bg:        var(--re-surface);
+  --re-file-zone-bg-hover:  color-mix(in oklab, var(--re-surface) 85%, var(--re-accent) 15%);
+  --re-file-zone-bg-drag:   color-mix(in oklab, var(--re-surface) 88%, var(--re-accent) 12%);
+  --re-file-zone-border:    var(--re-border);
+  --re-file-meta-bg:        var(--re-surface-2);
+  --re-file-meta-border:    var(--re-border);
+  --re-file-disabled-bg:    color-mix(in oklab, var(--re-surface) 92%, var(--re-bg) 8%);
+  --re-file-disabled-border:var(--re-border);
+  --re-file-ring:           color-mix(in oklab, var(--re-accent) 35%, transparent);
+}
+
+/* Keep input accessible to AT while visually hidden */
+.re-file {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+/* Wrapper and zone */
+.re-file-wrap { display: grid; gap: .5rem; }
+
+.re-file-zone {
+  border: 2px dashed var(--re-file-zone-border);
+  border-radius: .5rem;
+  padding: 1rem;
+  cursor: pointer;
+  background: var(--re-file-zone-bg);
+  outline: none;
+  transition:
+    border-color .15s ease,
+    background .15s ease,
+    box-shadow .15s ease;
+  color: inherit; /* inherit themed text color */
+}
+
+.re-file-zone:hover,
+.re-file-zone:focus {
+  border-color: var(--re-accent);
+  background: var(--re-file-zone-bg-hover);
+  box-shadow: 0 0 0 3px var(--re-file-ring);
+}
+
+.re-file-zone.dragover {
+  border-color: var(--re-accent);
+  background: var(--re-file-zone-bg-drag);
+}
+
+/* Disabled state matches theme */
+.re-file-zone[disabled],
+.re-file-zone.is-disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  border-color: var(--re-file-disabled-border);
+  background: var(--re-file-disabled-bg);
+  pointer-events: none;
+}
+
+/* Inner content */
+.re-file-zone-inner {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  justify-content: center;
+  text-align: center;
+}
+.re-file-icon { opacity: .8; }
+.re-file-zone-text strong { display: block; }
+.re-file-zone-or { opacity: .7; margin: 0 .35rem; }
+
+/* Link that opens the native picker */
+.re-link {
+  background: none;
+  border: 0;
+  color: var(--re-accent);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* Selected file metadata chip */
+.re-file-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--re-file-meta-border);
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+  background: var(--re-file-meta-bg);
+  color: inherit;
+}
+
+.re-file-info { display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap; }
+.re-file-name { font-weight: 600; }
+.re-file-size { opacity: .8; font-size: .9em; }
+
+/* Small button size for “Remove” */
+.re-btn.re-mini { font-size: .85em; padding: .25rem .5rem; }
+
+
+/* ======= File error box (light/dark aware) ======= */
+
+/* Optional micro-resets for the error box */
+.re-file-error,
+.re-file-error * {
+  box-sizing: border-box;
+}
+
+/* Hidden state (mirrors your JS behavior) */
+.re-file-error[hidden] {
+  display: none !important;
+}
+
+/* Theme-aware tokens for the error component */
+:where(.reverse-engineer-gui) {
+  --re-err-text:  color-mix(in oklab, var(--re-text) 60%, var(--re-danger-700) 40%);
+  --re-err-border: color-mix(in oklab, var(--re-danger) 55%, var(--re-border) 45%);
+  --re-err-bg:    color-mix(in oklab, var(--re-surface) 86%, var(--re-danger) 14%);
+  --re-err-ring:  color-mix(in oklab, var(--re-danger) 35%, transparent);
+}
+
+/* Error box */
+.re-file-error {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: .5rem .65rem;
+  align-items: start;
+
+  padding: .625rem .75rem;
+  border-radius: .5rem;
+  border: 1px solid var(--re-err-border);
+  background: var(--re-err-bg);
+  color: var(--re-err-text);
+
+  /* small entrance pop when revealed */
+  animation: re-err-in .16s ease-out both;
+}
+
+/* Decorative icon with no extra markup */
+.re-file-error::before {
+  content: "!";
+  display: inline-grid;
+  place-items: center;
+  width: 20px; height: 20px;
+  margin-top: 2px;
+
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1;
+  color: #fff;
+
+  background: var(--re-danger);
+  border: 1px solid color-mix(in oklab, var(--re-danger-700) 70%, var(--re-danger) 30%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--re-danger) 20%, transparent);
+}
+
+/* Links inside errors (if any) */
+.re-file-error a {
+  color: color-mix(in oklab, var(--re-danger-700) 65%, var(--re-accent) 35%);
+  text-decoration: underline;
+}
+
+/* Strong text within error */
+.re-file-error strong {
+  color: color-mix(in oklab, var(--re-text) 70%, var(--re-danger-700) 30%);
+}
+
+/* Optional: emphasize the drop zone when error is present */
+.re-file-zone.is-error {
+  border-color: var(--re-danger);
+  box-shadow: 0 0 0 3px var(--re-err-ring);
+}
+
+/* Entrance animation */
+@keyframes re-err-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======= Progress Bar ======= */
+:where(.reverse-engineer-gui) {
+  /* Sizing & shape */
+  --re-progress-height: 6px;
+  --re-progress-radius: 4px;
+
+  /* Track: subtle, works in light and dark */
+  --re-progress-track-bg: color-mix(in oklab, var(--re-text) 18%, transparent);
+
+  /* Bar: emerald gradient matching this theme */
+  --re-progress-bar-bg: linear-gradient(
+    90deg,
+    var(--re-accent) 0%,
+    var(--re-accent-strong) 50%,
+    var(--re-ok) 100%
+  );
+
+  /* Smooth width update (JS sets width %) */
+  --re-progress-transition: width .12s ease;
+}
+
+/* If the document is in explicit light mode, soften the track a bit more */
+:root[data-theme="light"] :where(.reverse-engineer-gui) {
+  --re-progress-track-bg: color-mix(in oklab, var(--re-text) 12%, transparent);
+}
+
+/* If system is light and no explicit theme set, also soften */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) :where(.reverse-engineer-gui) {
+    --re-progress-track-bg: color-mix(in oklab, var(--re-text) 12%, transparent);
+  }
+}
+
+.re-progress-wrap {
+  display: grid;
+  gap: .25rem;
+}
+
+/* Respect the HTML [hidden] attribute controlled by JS */
+.re-progress-wrap[hidden] {
+  display: none !important;
+}
+
+.re-progress-track {
+  width: 100%;
+  height: var(--re-progress-height);
+  background: var(--re-progress-track-bg);
+  border-radius: var(--re-progress-radius);
+  overflow: hidden;
+}
+
+.re-progress-bar {
+  width: 0%; /* JS updates this via style.width = `${p}%` */
+  height: 100%;
+  background: var(--re-progress-bar-bg);
+  transition: var(--re-progress-transition);
+}
+
+.re-progress-label {
+  font-size: 12px;
+  margin-top: .25rem;
+  color: var(--re-text);
+}
+
+/* Optional states if you want different looks from JS:
+   progWrap.classList.add('is-success') or 'is-error' */
+.re-progress-wrap.is-success .re-progress-bar {
+  background: linear-gradient(90deg, var(--re-ok), var(--re-accent-strong));
+}
+.re-progress-wrap.is-error .re-progress-bar {
+  background: linear-gradient(90deg, var(--re-danger), var(--re-danger-700));
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .re-progress-bar {
+    transition: none;
+  }
 }
