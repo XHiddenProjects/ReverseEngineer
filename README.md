@@ -1,7 +1,15 @@
 # ReverseEngineer
 ReverseEngineer is a ES6 JS library algorithm that developers can create their own custom algorithm or use existing algorithms to reverse and forward strings
 
-## What needs to be downloaded
+## Table of contents
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Executing the methods](#executing-the-methods)
+- [Developers](#developers)
+- [CryptoUtils](#cryptoUtils)
+- [GUI](#gui)
+
+## Requirements
 1. ReverseEngineer.js
 2. `ciphers`/`encoders`/`encryptions`/`hashing` folder - This contains predefined scripts.
 3. `themes` folder - Themes for the editor
