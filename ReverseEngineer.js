@@ -1,8 +1,22 @@
 /**
- * @module ReverseEngineer
- * @version 1.4.0
+ * @module ReverseEngineer (Auto-Sanitize Args)
+ * @version 1.4.3
  * @description ReverseEngineer is an open-source JavaScript library that allows you to encode/decode and encrypt/decrypt strings,
  * and provides a small GUI to experiment with loaded algorithms.
+ *
+ * Changes in 1.4.3:
+ * - **Core sanitization**: init/forward/reverse now sanitize inputs **centrally** before invoking algorithms.
+ *   This guarantees consistent types no matter how the engine is called (GUI or programmatic).
+ *   - Strings that look like JSON/JSON-ish are parsed into objects/arrays (unquoted keys quoted, single → double quotes,
+ *     trailing commas removed), keys validated, values sanitized (no functions/symbols/undefined; blocks __proto__/prototype/constructor).
+ *   - "true"/"false" → booleans, "null" → null, numeric strings (ints/floats/exponent) → numbers, else stays string.
+ *   - Arrays/objects are deep‑sanitized; File/Blob/ArrayBuffer/TypedArray/DataView/Date are **preserved**.
+ * - GUI keeps its friendly parser, but the engine no longer depends on GUI to coerce types.
+ *
+ * Changes in 1.4.2 (previous):
+ * - When args contain strings that *look like* JSON/JSON-ish objects (e.g. "{\nkey: '...', ...}"),
+ *   the GUI attempts to **coerce and sanitize** them to real JSON objects (quote keys, single→double quotes, remove trailing commas, etc.).
+ *
  * @see https://github.com/XHiddenProjects/ReverseEngineer
  */
 
@@ -64,6 +78,171 @@
  */
 
 /* ========================================================================== */
+/* =========================== Crypto Utilities ============================= */
+/* ========================================================================== */
+
+export const CryptoUtils = {
+  b64ToBytes: (b64)=>Uint8Array.from(atob(b64), c=>c.charCodeAt(0)),
+  bytesToB64: (bytes)=>btoa(String.fromCharCode(...bytes)),
+  randomBytes: (length)=>{ const a=new Uint8Array(length); crypto.getRandomValues(a); return a; },
+  utf8ToBytes: (s)=>new TextEncoder().encode(s),
+  bytesToUtf8: (b)=>new TextDecoder().decode(b),
+  generateB64Key:(length=32)=>{ const keyBytes = CryptoUtils.randomBytes(length); return CryptoUtils.bytesToB64(keyBytes); }
+};
+
+/* ========================================================================== */
+/* ================= Argument Sanitization (Shared) ========================= */
+/* ========================================================================== */
+
+/**
+ * Shared, safe argument sanitization helpers used by both the Engine and the GUI.
+ */
+export const ArgSanitizer = (()=>{
+  const FORBIDDEN_KEYS = new Set(['__proto__','prototype','constructor']);
+  const FORBIDDEN_KEY_CHAR_RE = /[\n\r\t]/; // disallow newline, carriage return, tab
+
+  function ensureValidKeysDeep(value, path=''){
+    if (value === null || value === undefined) return;
+    const t = typeof value;
+    if (Array.isArray(value)) {
+      for (let i=0; i<value.length; i++) {
+        ensureValidKeysDeep(value[i], `${path}[${i}]`);
+      }
+      return;
+    }
+    if (t === 'object') {
+      for (const k of Object.keys(value)) {
+        if (FORBIDDEN_KEYS.has(k)) throw new Error(`Forbidden key at ${path || 'root'}: "${k}"`);
+        if (FORBIDDEN_KEY_CHAR_RE.test(k)) throw new Error(`Invalid key at ${path || 'root'}: "${k}" contains newline/tab characters`);
+        if (k.trim() !== k) throw new Error(`Invalid key at ${path || 'root'}: "${k}" has leading/trailing whitespace`);
+        ensureValidKeysDeep(value[k], path ? `${path}.${k}` : k);
+      }
+    }
+  }
+
+  function sanitizeValue(val, depth=0){
+    if (depth > 100) throw new Error('Arguments too deeply nested');
+    if (val === null) return null;
+    const t = typeof val;
+
+    // Preserve safe, non-plain objects as-is
+    if (val instanceof Date) return val;
+    if (typeof File !== 'undefined' && val instanceof File) return val;
+    if (typeof Blob !== 'undefined' && val instanceof Blob) return val;
+    if (val instanceof ArrayBuffer) return val;
+    if (ArrayBuffer.isView(val)) return val; // TypedArray, DataView
+
+    if (t === 'string' || t === 'number' || t === 'boolean' || t === 'bigint') return val;
+    if (Array.isArray(val)) return val.map(v => sanitizeValue(v, depth+1));
+    if (t === 'object') {
+      const out = Object.create(null);
+      for (const k of Object.keys(val)) {
+        if (FORBIDDEN_KEYS.has(k)) continue;
+        out[k] = sanitizeValue(val[k], depth+1);
+      }
+      return out;
+    }
+    // functions, symbols, undefined → strip
+    return undefined;
+  }
+
+  function normalizeJsonishToJson(src){
+    let s = String(src || '');
+    // Convert single-quoted strings to double-quoted
+    s = s.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (m, g1)=> '"' + g1.replace(/\\\"/g,'\"') + '"');
+    // Quote unquoted keys
+    s = s.replace(/([\{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g, '$1"$2"$3');
+    // Remove trailing commas
+    s = s.replace(/,\s*(?=[}\]])/g, '');
+    return s;
+  }
+
+  function coerceJsonishStringToValue(str){
+    if (typeof str !== 'string') return str;
+    const raw = str.trim();
+    if (!raw) return str;
+    if (!/^[\[{]/.test(raw)) return str; // only attempt for object/array-looking strings
+
+    // Try strict JSON parse first
+    try {
+      const v = JSON.parse(raw);
+      ensureValidKeysDeep(v);
+      return v;
+    } catch {}
+
+    // Try normalization
+    try {
+      const fixed = normalizeJsonishToJson(raw);
+      const v = JSON.parse(fixed);
+      ensureValidKeysDeep(v);
+      return v;
+    } catch {}
+
+    return str; // give up; keep as string
+  }
+
+  function autoCast(s){
+    const t = String(s).trim();
+    if (/^(true|false)$/i.test(t)) return t.toLowerCase()==='true';
+    if (/^null$/i.test(t)) return null;
+    // number (int/float/exponent). Avoid parsing empty strings and leading + sign variety
+    if (/^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(t)) return Number(t);
+    return s;
+  }
+
+  function sanitizeSingle(value){
+    // Strings: try JSON-ish, then primitives
+    if (typeof value === 'string') {
+      const maybeObj = coerceJsonishStringToValue(value);
+      if (maybeObj && typeof maybeObj === 'object') {
+        ensureValidKeysDeep(maybeObj);
+        return sanitizeValue(maybeObj);
+      }
+      // If JSON.parse(value) yields a primitive (e.g., "123", true), allow it
+      try {
+        const j = JSON.parse(value);
+        if (j && typeof j === 'object') { ensureValidKeysDeep(j); return sanitizeValue(j); }
+        if (j === null || typeof j !== 'undefined') return j;
+      } catch {}
+      return autoCast(value);
+    }
+
+    // Arrays / plain objects
+    if (Array.isArray(value)) return value.map(sanitizeSingle);
+    if (value && typeof value === 'object') {
+      // Preserve special binary/filelike types
+      if (value instanceof Date) return value;
+      if (typeof File !== 'undefined' && value instanceof File) return value;
+      if (typeof Blob !== 'undefined' && value instanceof Blob) return value;
+      if (value instanceof ArrayBuffer) return value;
+      if (ArrayBuffer.isView(value)) return value;
+
+      ensureValidKeysDeep(value);
+      return sanitizeValue(value);
+    }
+
+    // primitives and others
+    return value;
+  }
+
+  function sanitizeParams(paramsArray){
+    return paramsArray.map(sanitizeSingle);
+  }
+
+  return {
+    FORBIDDEN_KEYS,
+    FORBIDDEN_KEY_CHAR_RE,
+    ensureValidKeysDeep,
+    sanitizeValue,
+    normalizeJsonishToJson,
+    coerceJsonishStringToValue,
+    autoCast,
+    sanitizeSingle,
+    sanitizeParams,
+  };
+})();
+
+/* ========================================================================== */
 /* =============================== Core Engine ============================== */
 /* ========================================================================== */
 
@@ -114,6 +293,13 @@ export const ReverseEngineer = class {
     return this.#algorithms.find(a => a.algo_name.toLowerCase() === n) ?? null;
   }
 
+  /** @private */ #sanitizeParams(params){
+    try { return ArgSanitizer.sanitizeParams(params); } catch (e) { this.debug('WARN', `Param sanitization failed: ${e?.message||e}`); return params; }
+  }
+  /** @private */ #sanitizeInput(input){
+    try { return ArgSanitizer.sanitizeSingle(input); } catch (e) { this.debug('WARN', `Input sanitization failed: ${e?.message||e}`); return input; }
+  }
+
   add(Algo) {
     if (!this.#instance) throw new Error('You must use the getInstance() before running this');
     const algo = new Algo();
@@ -159,9 +345,9 @@ export const ReverseEngineer = class {
 
   remove(Algo = null) { if (!Algo) { this.#algorithms = []; return this; } const name = typeof Algo === 'string' ? Algo : Algo.name; this.#algorithms = this.#algorithms.filter(i => i.algo_name !== name); return this; }
 
-  init(algorithm, ...params) { const name = typeof algorithm === 'string' ? algorithm : new algorithm().constructor.name; const a = this.#getAlgorithm(name); if (!a?.instance) throw new Error(`${name} has not been instanced`); return a.algo_init?.(...params); }
-  forward(algorithm, ...params) { const name = typeof algorithm === 'string' ? algorithm : new algorithm().constructor.name; const a = this.#getAlgorithm(name); if (!a?.instance) throw new Error(`${name} has not been instanced`); return a.algo_forward(...params); }
-  reverse(algorithm, ...params) { const name = typeof algorithm === 'string' ? algorithm : new algorithm().constructor.name; const a = this.#getAlgorithm(name); if (!a?.instance) throw new Error(`${name} has not been instanced`); return a.algo_reverse(...params); }
+  init(algorithm, ...params) { const name = typeof algorithm === 'string' ? algorithm : new algorithm().constructor.name; const a = this.#getAlgorithm(name); if (!a?.instance) throw new Error(`${name} has not been instanced`); const sParams = this.#sanitizeParams(params); return a.algo_init?.(...sParams); }
+  forward(algorithm, input, ...params) { const name = typeof algorithm === 'string' ? algorithm : new algorithm().constructor.name; const a = this.#getAlgorithm(name); if (!a?.instance) throw new Error(`${name} has not been instanced`); const sInput = this.#sanitizeInput(input); const sParams = this.#sanitizeParams(params); return a.algo_forward(sInput, ...sParams); }
+  reverse(algorithm, input, ...params) { const name = typeof algorithm === 'string' ? algorithm : new algorithm().constructor.name; const a = this.#getAlgorithm(name); if (!a?.instance) throw new Error(`${name} has not been instanced`); const sInput = this.#sanitizeInput(input); const sParams = this.#sanitizeParams(params); return a.algo_reverse(sInput, ...sParams); }
   dispose(algorithm) { if (algorithm) { this.#ensureInstanced(); const name = typeof algorithm === 'string' ? algorithm : (algorithm.id ?? algorithm.name); const obj = this.#getAlgorithm(name); if (obj?.instance?.dispose) obj.instance.dispose(); this.remove(name); return this; } return this; }
 
   list(){ return this.#algorithms.map(o => o.algo_name); }
@@ -177,19 +363,6 @@ export const ReverseEngineer = class {
   fromJSON(json, resolver){ this.#ensureInstanced(); const list = JSON.parse(json); for (const {name} of list){ const Ctor = resolver(name); if (Ctor) this.add(Ctor); } return this; }
   uiPolicy(algorithm){ this.#ensureInstanced(); const name = typeof algorithm === 'string' ? algorithm : new algorithm().constructor.name; const a = this.#getAlgorithm(name); return a?.uiPolicy ?? null; }
   setUiPolicy(algorithm, policy){ this.#ensureInstanced(); const name = typeof algorithm === 'string' ? algorithm : new algorithm().constructor.name; const a = this.#getAlgorithm(name); if (!a) throw new Error(`${name} has not been instanced`); a.uiPolicy = policy; return this; }
-};
-
-/* ========================================================================== */
-/* =========================== Crypto Utilities ============================= */
-/* ========================================================================== */
-
-export const CryptoUtils = {
-  b64ToBytes: (b64)=>Uint8Array.from(atob(b64), c=>c.charCodeAt(0)),
-  bytesToB64: (bytes)=>btoa(String.fromCharCode(...bytes)),
-  randomBytes: (length)=>{ const a=new Uint8Array(length); crypto.getRandomValues(a); return a; },
-  utf8ToBytes: (s)=>new TextEncoder().encode(s),
-  bytesToUtf8: (b)=>new TextDecoder().decode(b),
-  generateB64Key:(length=32)=>{ const keyBytes = CryptoUtils.randomBytes(length); return CryptoUtils.bytesToB64(keyBytes); }
 };
 
 /* ========================================================================== */
@@ -320,17 +493,16 @@ export const ReverseEngineerGUI = class {
           </div>
           <div class="re-field-row">
             <div class="re-field">
-              <label for="re-args" class="re-label">Arguments (JSON array preferred; fallback: comma-separated)</label>
-              <textarea id="re-args" class="re-input re-textarea" rows="3" placeholder='e.g. ["salt", 10, true] or salt,10,true'></textarea>
-              <p class="re-hint">We’ll <code>JSON.parse</code> first; if that fails, we split by commas and auto-cast numbers/booleans/null.</p>
+              <label for="re-args" class="re-label">Arguments</label>
+              <textarea id="re-args" class="re-input re-textarea" rows="3" placeholder='Examples: [ { "key": "...", "mode": "CBC" } ]  — or —  salt,10,true'></textarea>
+              <p class="re-hint">
+                Objects/arrays must be valid JSON. If you paste a quoted JSON-ish object like <code>["{}"]</code>,
+                we will attempt to auto-sanitize it into a proper JSON object. Keys may not contain newlines/tabs.
+              </p>
             </div>
           </div>
 
-          <!-- File picker + drag&drop (disabled by default; enabled by policy)
-               You can configure validation via data attributes on .re-file-zone:
-               data-size-limit="2MB" data-file-type=".txt,.json,text/plain"
-               Optional read mode: data-read-mode="bytes|text|dataurl"
-          -->
+          <!-- File picker + drag&drop (disabled by default; enabled by policy) -->
           <div class="re-file-wrap">
             <div class="re-file-zone"
                  tabindex="0"
@@ -343,7 +515,7 @@ export const ReverseEngineerGUI = class {
               <input id="re-file" class="re-input re-file" type="file" accept=".txt"/>
               <div class="re-file-zone-inner">
                 <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" class="re-file-icon">
-                  <path d="M12 16V4m0 0l-3 3m3-3l3 3M6 20h12a2 2 0 0 0 2-2v0a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 16V4m0 0l-3 3m3-3l3 3M6 20h12a2 2 0 0 0 2-2v0a2 2 0 0 0-2-2H6a2 2 0 0 0 2 2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <div class="re-file-zone-text">
                   <strong>Drop a file here</strong>
@@ -624,13 +796,86 @@ export const ReverseEngineerGUI = class {
       refreshFileUI();
     };
 
-    const pretty = (val)=>{ try{ if(typeof val==='string'){ const maybe=JSON.parse(val); return JSON.stringify(maybe,null,2); } return typeof val==='object'? JSON.stringify(val,null,2): String(val); }catch{ return typeof val==='object'? JSON.stringify(val,null,2): String(val);} };
+    // --- Output pretty printer: DO NOT parse strings; show as-is safely ---
+    const pretty = (val)=>{
+      if (val === null || val === undefined) return '—';
+      if (typeof val === 'string') return val;
+      try { return JSON.stringify(val, null, 2); } catch { return String(val); }
+    };
 
-    const autoCast = (s)=>{ const t=s.trim(); if(/^(true|false)$/i.test(t)) return t.toLowerCase()==='true'; if(/^null$/i.test(t)) return null; if(/^-?\d+(\.\d+)?$/.test(t)) return Number(t); return t; };
+    // Reuse sanitization helpers from ArgSanitizer inside GUI
+    const { ensureValidKeysDeep, sanitizeValue, normalizeJsonishToJson, coerceJsonishStringToValue, autoCast } = ArgSanitizer;
 
-    function normalizeJsonishToJson(src){ const s0=src.trim(); if(!s0) return s0; if(!/^[\[\{]/.test(s0)) return s0; let str=s0.replace(/,\s*(?=[\}\]\)])/g,''); { let out=''; const stack=[]; let inStr=false; let esc=false; const expectKeyStack=[]; const isIdentStart=c=>/[A-Za-z_$]/.test(c); const isIdent=c=>/[A-Za-z0-9_$]/.test(c); for(let i=0;i<str.length;i++){ const ch=str[i]; if(inStr){ out+=ch; if(esc){esc=false; continue;} if(ch==='\\'){esc=true; continue;} if(ch==='"'){inStr=false;} continue;} if(ch==='"'){ inStr=true; out+=ch; continue;} if(ch==='{'){ stack.push('object'); expectKeyStack.push(true); out+=ch; continue;} if(ch==='['){ stack.push('array'); out+=ch; continue;} if(ch==='}'){ if(stack.pop()==='object') expectKeyStack.pop(); out+=ch; continue;} if(ch===']'){ stack.pop(); out+=ch; continue;} const top=stack[stack.length-1]; if(top==='object'){ if(ch===':'){ expectKeyStack[expectKeyStack.length-1]=false; out+=ch; continue;} if(ch===','){ expectKeyStack[expectKeyStack.length-1]=true; out+=ch; continue;} const expectKey=expectKeyStack[expectKeyStack.length-1]; if(expectKey){ if(/\s/.test(ch)){ out+=ch; continue;} if(ch==='"'){ inStr=true; out+=ch; continue;} if(isIdentStart(ch)){ let j=i+1; while(j<str.length && isIdent(str[j])) j++; const ident=str.slice(i,j); let k=j; while(k<str.length && /\s/.test(str[k])) k++; if(str[k]===':'){ out+=`"${ident}"`; i=j-1; expectKeyStack[expectKeyStack.length-1]=false; continue;} } } } out+=ch; } str=out; } return str; }
+    // --- Robust arguments parser (with auto-sanitize of quoted JSON-ish objects) ---
+    function parseArgs(text){
+      const raw = (text ?? '').trim();
+      if (!raw) return [];
 
-    const parseArgs = (text)=>{ const raw=text.trim(); if(!raw) return []; try{ const j=JSON.parse(raw); return Array.isArray(j)? j: [j]; }catch{} const parts=[]; let buf=''; let depth=0; let inStr=false; let quote=''; let esc=false; for(let i=0;i<raw.length;i++){ const ch=raw[i]; if(inStr){ buf+=ch; if(esc){esc=false; continue;} if(ch==='\\'){esc=true; continue;} if(ch===quote){ inStr=false; quote=''; } continue;} if(ch==='"'||ch==='\''){ inStr=true; quote=ch; buf+=ch; continue;} if(ch==='{'||ch==='['||ch==='('){ depth++; buf+=ch; continue;} if(ch==='}'||ch===']'||ch===')'){ depth=Math.max(0,depth-1); buf+=ch; continue;} if(ch===',' && depth===0){ const tok=buf.trim(); if(tok) parts.push(tok); buf=''; continue;} buf+=ch; } const last=buf.trim(); if(last) parts.push(last); return parts.map((p)=>{ const isWrappedSingle=p.length>=2 && p[0]==='\'' && p[p.length-1]=='\''; const isWrappedDouble=p.length>=2 && p[0]==='"' && p[p.length-1]==='"'; let token=p; if((isWrappedSingle||isWrappedDouble) && /^[\[\{].*[\]\}]$/.test(p.slice(1,-1).trim())) token=p.slice(1,-1); try{ return JSON.parse(token);}catch{} const fixed=normalizeJsonishToJson(token); try{ return JSON.parse(fixed);}catch{} return autoCast(token); }); };
+      // Helper: unwrap token if quoted with single or double quotes
+      function unwrapQuotedToken(p){
+        const isDouble = p.length>=2 && p[0]==='"' && p[p.length-1]==='"';
+        const isSingle = p.length>=2 && p[0]==="'" && p[p.length-1]==="'";
+        if (!isDouble && !isSingle) return null;
+        let s = p.slice(1,-1);
+        if (isDouble) s = s.replace(/\\\"/g,'"').replace(/\\\\/g,'\\');
+        else s = s.replace(/\\\'/g,"'").replace(/\\\\/g,'\\');
+        return s;
+      }
+
+      // 1) Try to parse entire input as JSON
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const coerced = parsed.map(el => {
+            if (typeof el === 'string') {
+              const v = coerceJsonishStringToValue(el);
+              if (v && typeof v === 'object') return sanitizeValue(v);
+              return el; // keep as string if not coercible
+            }
+            if (el && typeof el === 'object') { ensureValidKeysDeep(el); return sanitizeValue(el); }
+            return el;
+          });
+          return coerced;
+        }
+        if (typeof parsed === 'string') {
+          const v = coerceJsonishStringToValue(parsed);
+          if (v && typeof v === 'object') return [sanitizeValue(v)];
+          return [parsed];
+        }
+        if (parsed && typeof parsed === 'object') { ensureValidKeysDeep(parsed); return [sanitizeValue(parsed)]; }
+        return [parsed];
+      } catch {}
+
+      // 2) Fallback: comma-separated; allow quoted tokens that hold JSON-ish strings
+      const parts=[]; let buf=''; let depth=0; let inStr=false; let quote=''; let esc=false;
+      for(let i=0;i<raw.length;i++){
+        const ch=raw[i];
+        if(inStr){ buf+=ch; if(esc){esc=false; continue;} if(ch==='\\'){esc=true; continue;} if(ch===quote){ inStr=false; quote=''; } continue; }
+        if(ch==='"'||ch==="'"){ inStr=true; quote=ch; buf+=ch; continue; }
+        if(ch==='{'||ch==='['||ch==='('){ depth++; buf+=ch; continue; }
+        if(ch==='}'||ch===']'||ch===')'){ depth=Math.max(0,depth-1); buf+=ch; continue; }
+        if(ch===',' && depth===0){ const tok=buf.trim(); if(tok) parts.push(tok); buf=''; continue; }
+        buf+=ch;
+      }
+      const last=buf.trim(); if(last) parts.push(last);
+
+      const args = parts.map((p)=>{
+        const unwrapped = unwrapQuotedToken(p);
+        if (unwrapped !== null) {
+          const v = coerceJsonishStringToValue(unwrapped);
+          if (v && typeof v === 'object') return sanitizeValue(v);
+          // try primitive JSON parse
+          try { const j = JSON.parse(unwrapped); if (j && typeof j==='object') { ensureValidKeysDeep(j); return sanitizeValue(j); } return j; } catch {}
+          return autoCast(unwrapped);
+        }
+
+        // Not quoted: try JSON.parse
+        try { const v = JSON.parse(p); if (v && typeof v==='object') { ensureValidKeysDeep(v); return sanitizeValue(v); } return v; } catch {}
+        // primitive
+        return autoCast(p);
+      });
+      return args;
+    }
 
     const setOutput = (val)=>{ outputEl.textContent = pretty(val ?? '—'); };
     const setDetails=(meta)=>{ nameEl.textContent = meta?.algo_name ?? '—'; verEl.textContent = meta?.algo_version ?? '—'; descEl.textContent = meta?.algo_description ?? '—'; };
@@ -641,9 +886,9 @@ export const ReverseEngineerGUI = class {
     const DEFAULT_POLICY = {
       requiresInit:false,
       directions:{
-        init:    {input:false,args:true, inputPh:'—',       argsPh:'Algorithm-specific options (JSON)', allowFile:false},
-        forward: {input:true, args:true, inputPh:'Input',   argsPh:'Arguments (JSON or comma-separated)', allowFile:false},
-        reverse: {input:true, args:true, inputPh:'Input',   argsPh:'Arguments (JSON or comma-separated)', allowFile:false}
+        init:    {input:false,args:true, inputPh:'—',       argsPh:'Algorithm-specific options (JSON; quoted objects auto-sanitized)', allowFile:false},
+        forward: {input:true, args:true, inputPh:'Input',   argsPh:'Arguments (JSON or primitives comma-separated; quoted objects auto-sanitized)', allowFile:false},
+        reverse: {input:true, args:true, inputPh:'Input',   argsPh:'Arguments (JSON or primitives comma-separated; quoted objects auto-sanitized)', allowFile:false}
       }
     };
 
@@ -725,9 +970,9 @@ export const ReverseEngineerGUI = class {
       if(groupBy==='category'){
         const groups=new Map(); for(const m of items){ const cat=(m.algo_category||'Uncategorized').toString(); if(!groups.has(cat)) groups.set(cat,[]); groups.get(cat).push(m); }
         const cats=Array.from(groups.keys()).sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
-        for(const cat of cats){ const header=document.createElement('li'); header.className='re-group-header'; header.setAttribute('role','presentation'); header.textContent=cat; listEl.appendChild(header); const groupItems=groups.get(cat); for(const m of groupItems){ const li=document.createElement('li'); li.className='re-algo-item'; li.setAttribute('role','option'); li.tabIndex=0; li.dataset.name=m.algo_name; li.innerHTML=`<div class="re-algo-name">${m.algo_name}</div>`; li.addEventListener('click',()=>selectAlgo(m.algo_name, li)); li.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectAlgo(m.algo_name, li);} }); listEl.appendChild(li); } }
+        for(const cat of cats){ const header=document.createElement('li'); header.className='re-group-header'; header.setAttribute('role','presentation'); header.textContent=cat; listEl.appendChild(header); const groupItems=groups.get(cat); for(const m of groupItems){ const li=document.createElement('li'); li.className='re-algo-item'; li.setAttribute('role','option'); li.tabIndex=0; li.dataset.name=m.algo_name; const nameDiv=document.createElement('div'); nameDiv.className='re-algo-name'; nameDiv.textContent=m.algo_name; li.appendChild(nameDiv); li.addEventListener('click',()=>selectAlgo(m.algo_name, li)); li.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectAlgo(m.algo_name, li);} }); listEl.appendChild(li); } }
       } else {
-        for(const m of items){ const li=document.createElement('li'); li.className='re-algo-item'; li.setAttribute('role','option'); li.tabIndex=0; li.dataset.name=m.algo_name; li.innerHTML=`<div class=\"re-algo-name\">${m.algo_name}</div>`; li.addEventListener('click',()=>selectAlgo(m.algo_name, li)); li.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectAlgo(m.algo_name, li);} }); listEl.appendChild(li); }
+        for(const m of items){ const li=document.createElement('li'); li.className='re-algo-item'; li.setAttribute('role','option'); li.tabIndex=0; li.dataset.name=m.algo_name; const nameDiv=document.createElement('div'); nameDiv.className='re-algo-name'; nameDiv.textContent=m.algo_name; li.appendChild(nameDiv); li.addEventListener('click',()=>selectAlgo(m.algo_name, li)); li.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectAlgo(m.algo_name, li);} }); listEl.appendChild(li); }
       }
       if(!selected) setDisabled(true);
     }
@@ -765,7 +1010,13 @@ export const ReverseEngineerGUI = class {
     formEl.addEventListener('submit', async (e)=>{
       e.preventDefault(); if(!selected) return setOutput('Select an algorithm first.');
       const dir = dirRadios.find(r=>r.checked)?.value ?? 'forward';
-      const inp = inputEl.value; const args = parseArgs(argsEl.value);
+      const inp = inputEl.value; let args=[];
+      try {
+        args = parseArgs(argsEl.value);
+      } catch(parseErr) {
+        setOutput({ error: String(parseErr?.message || 'Invalid arguments') });
+        return;
+      }
 
       const hasFileLikeArg = args.some(a=> a && typeof a==='object' && (a.file || a.fileInput || a.bytes || a.path));
       if(selectedFile && !hasFileLikeArg) {
@@ -819,3 +1070,471 @@ export const ReverseEngineerGUI = class {
     return gui;
   }
 };
+
+
+// router.js
+
+/**
+ * @file A minimal browser-friendly router with HTTP verbs, params, middleware,
+ * direct invocation, and helpers to serve external files (no Node APIs).
+ *
+ * New helpers:
+ *  - Router.file('/file', src, options?): serve one file (src can be URL, string, Blob, ArrayBuffer, or loader fn)
+ *  - Router.static('/prefix/*', baseUrl, options?): map a wildcard route to fetch files from baseUrl
+ *
+ * Browser notes:
+ *  - To serve './fileManager.ps1', ensure it's hosted/bundled and addressable via URL.
+ *    Examples:
+ *      - Vite/ESM: new URL('./fileManager.ps1', import.meta.url)
+ *      - Vite raw text: import fileText from './fileManager.ps1?raw'
+ *      - Static folder: '/assets/fileManager.ps1'
+ */
+
+/**
+ * A mutable object representing an incoming request.
+ * @typedef {Object} Request
+ * @property {string} [method] - Uppercase HTTP method (e.g., 'GET') set by Router during invocation.
+ * @property {string} [path] - Normalized path (e.g., '/users/42') set by Router during invocation.
+ * @property {Object.<string, string>} [params] - Route parameters extracted from `:params`.
+ * @property {Object.<string, string|string[]>} [query] - Parsed query object; repeated keys become arrays.
+ * @property {any} [body] - Optional request body (you may set this before invoking).
+ * @property {any} [user] - Optional user/context you may attach before invoking.
+ */
+
+/**
+ * A mutable object representing a response. You can add fields as you like.
+ * @typedef {Object} Response
+ * @property {Object.<string, string>} [headers] - Response headers (if you choose to use them).
+ * @property {(key: string, value: string) => void} [setHeader] - Optional helper; can be added by middleware.
+ */
+
+/**
+ * A handler may return any value. For file helpers, we commonly return a Response-like object.
+ * @typedef {Object} ResponseLike
+ * @property {number} [status=200]
+ * @property {string} [type] - MIME type (e.g., 'text/plain', 'application/javascript').
+ * @property {Object.<string,string>} [headers]
+ * @property {string|Blob|ArrayBuffer|Uint8Array} [body]
+ */
+
+/**
+ * Route handler function.
+ * @callback Handler
+ * @param {Request} req - The request object populated by Router.
+ * @param {Response} res - The response object (you may mutate it).
+ * @returns {any|Promise<any>} Any value; if async, a Promise resolving to that value.
+ */
+
+/**
+ * Middleware function. Call `next()` to continue the chain.
+ * Throwing or rejecting short-circuits the chain.
+ * @callback Middleware
+ * @param {Request} req
+ * @param {Response} res
+ * @param {() => (void|Promise<void>)} next
+ * @returns {void|Promise<void>}
+ */
+
+/**
+ * @typedef {Object} RouteDef
+ * @property {string} method - Uppercase HTTP method or 'ALL'.
+ * @property {RegExp} regex - Compiled path regex.
+ * @property {string[]} keys - `:param` names in order (supports wildcard).
+ * @property {Handler} handler - The handler to run.
+ */
+
+export const Router = (() => {
+  /** @type {RouteDef[]} */
+  const routes = [];
+  /** @type {Middleware[]} */
+  const middlewares = [];
+  /** @type {readonly string[]} */
+  const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD', 'ALL'];
+
+  // ---------- Utilities ----------
+
+  /**
+   * Normalize a path to a stable form:
+   * - Removes hash prefix ('#/x' -> '/x')
+   * - Strips protocol/host if a full URL was passed
+   * - Collapses multiple slashes
+   * - Removes trailing slash (except root)
+   * @param {string} p
+   * @returns {string}
+   * @private
+   */
+  const normalizePath = (p) => {
+    if (typeof p !== 'string') throw new TypeError('path must be a string');
+    const noHash = p.replace(/^#/, '');
+    const noProto = noHash.replace(/^[a-z]+:\/*/i, ''); // strip "http://", "https://", etc.
+    const [pathname] = noProto.split('?');
+    const normalized = ('/' + pathname).replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+    return normalized;
+  };
+
+  /**
+   * Parse query string into an object. Repeated keys become arrays.
+   * @param {string} raw - The raw input path (may include '?query=...').
+   * @returns {Object.<string, string|string[]>}
+   * @private
+   */
+  const parseQuery = (raw) => {
+    const idx = raw.indexOf('?');
+    if (idx === -1) return {};
+    const qs = raw.slice(idx + 1);
+    const out = {};
+    for (const [k, v] of new URLSearchParams(qs)) {
+      if (k in out) out[k] = Array.isArray(out[k]) ? [...out[k], v] : [out[k], v];
+      else out[k] = v;
+    }
+    return out;
+  };
+
+  /**
+   * Basic MIME type guessing by extension. Extend as needed.
+   * @param {string} nameOrPath
+   * @param {string} [fallback='application/octet-stream']
+   * @returns {string}
+   * @private
+   */
+  const guessType = (nameOrPath, fallback = 'application/octet-stream') => {
+    const ext = (nameOrPath.match(/\.([a-z0-9]+)(?:\?|#|$)/i) || [])[1]?.toLowerCase() || '';
+    const map = {
+      txt: 'text/plain; charset=utf-8',
+      ps1: 'text/plain; charset=utf-8',             // PowerShell (often served as text)
+      js:  'application/javascript; charset=utf-8',
+      mjs: 'application/javascript; charset=utf-8',
+      json:'application/json; charset=utf-8',
+      css: 'text/css; charset=utf-8',
+      html:'text/html; charset=utf-8',
+      svg: 'image/svg+xml',
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      jpeg:'image/jpeg',
+      gif: 'image/gif',
+      webp:'image/webp',
+      ico: 'image/x-icon',
+      pdf: 'application/pdf',
+      wasm:'application/wasm',
+    };
+    return map[ext] || fallback;
+  };
+
+  /**
+   * Compile a path pattern with `:params`, `*`, and `:name*` into a regex and collect param keys.
+   * - `:id` matches one path segment (no slash).
+   * - `*` matches the rest of the path (including slashes) into key 'wildcard'.
+   * - `:name*` matches the rest of the path into key 'name'.
+   * @param {string} path
+   * @returns {{ regex: RegExp, keys: string[] }}
+   * @private
+   */
+  const compile = (path) => {
+    const keys = [];
+    const segments = normalizePath(path).split('/').filter(Boolean);
+    const parts = segments.map(seg => {
+      if (seg === '*') {
+        keys.push('wildcard');
+        return '(.*)'; // capture rest
+      }
+      const namedRest = seg.match(/^:([A-Za-z0-9_]+)\*$/);
+      if (namedRest) {
+        keys.push(namedRest[1]);
+        return '(.*)'; // capture rest with name
+      }
+      if (seg.startsWith(':')) {
+        keys.push(seg.slice(1));
+        return '([^/]+)'; // single segment
+      }
+      // escape regex special characters
+      return seg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    });
+    const regex = new RegExp('^/' + parts.join('/') + '$');
+    return { regex, keys };
+  };
+
+  /**
+   * Register a route.
+   * @param {string} method - Uppercase HTTP method or 'ALL'
+   * @param {string} path
+   * @param {Handler} handler
+   * @private
+   */
+  const addRoute = (method, path, handler) => {
+    if (typeof handler !== 'function') {
+      throw new TypeError(`handler for ${method} ${path} must be a function`);
+    }
+    const { regex, keys } = compile(path);
+    routes.push({ method: method.toUpperCase(), regex, keys, handler });
+  };
+
+  /**
+   * Run middleware chain in registration order. If a middleware doesn't call `next()`,
+   * the chain stops (common pattern).
+   * @param {Request} req
+   * @param {Response} res
+   * @returns {Promise<void>}
+   * @private
+   */
+  const runMiddlewares = async (req, res) => {
+    let i = 0;
+    const next = async () => {
+      if (i >= middlewares.length) return;
+      const mw = middlewares[i++];
+      await mw(req, res, next);
+    };
+    await next();
+  };
+
+  /**
+   * Find all route candidates whose path regex matches.
+   * @param {string} path
+   * @returns {RouteDef[]}
+   * @private
+   */
+  const findCandidatesByPath = (path) => routes.filter(r => r.regex.test(path));
+
+  /**
+   * Invoke a route: matches method + path, runs middleware, then handler.
+   * @param {string} method
+   * @param {string} rawPath
+   * @param {Request} [req]
+   * @param {Response} [res]
+   * @returns {Promise<any>}
+   * @private
+   */
+  const invoke = async (method, rawPath, req = {}, res = {}) => {
+    const methodUp = (method || 'GET').toUpperCase();
+    const path = normalizePath(rawPath);
+    const query = parseQuery(rawPath);
+
+    const candidates = findCandidatesByPath(path);
+    if (candidates.length === 0) {
+      throw new Error(`404 Not Found: ${path}`);
+    }
+    const route = candidates.find(r => r.method === methodUp || r.method === 'ALL');
+    if (!route) {
+      throw new Error(`405 Method ${methodUp} Not Allowed for ${path}`);
+    }
+
+    // Extract params (including wildcard)
+    const m = path.match(route.regex);
+    /** @type {Record<string, string>} */
+    const params = {};
+    route.keys.forEach((k, idx) => (params[k] = decodeURIComponent(m[idx + 1])));
+
+    // Enrich req
+    req.method = methodUp;
+    req.path = path;
+    req.params = { ...(req.params || {}), ...params };
+    req.query = { ...(req.query || {}), ...query };
+
+    await runMiddlewares(req, res);
+    return route.handler(req, res);
+  };
+
+  // ---------- Public API (callable function + methods) ----------
+
+  /**
+   * @type {((a: string, b?: string|Object, c?: Request, d?: Response) => Promise<any>|void) & {
+   *   use(mw: Middleware): void;
+   *   get(path: string, handler: Handler): void;
+   *   post(path: string, handler: Handler): void;
+   *   put(path: string, handler: Handler): void;
+   *   patch(path: string, handler: Handler): void;
+   *   delete(path: string, handler: Handler): void;
+   *   options(path: string, handler: Handler): void;
+   *   head(path: string, handler: Handler): void;
+   *   all(path: string, handler: Handler): void;
+   *   handle(path: string, handler: Handler): void;
+   *   file(routePath: string, src: string|URL|Blob|ArrayBuffer|Uint8Array|(()=>Promise<any>|any), options?: {contentType?: string, status?: number, cache?: 'memory'|'none', headers?: Record<string,string>, name?: string}): void;
+   *   static(routePattern: string, baseUrl: string|URL, options?: {forwardHeaders?: Record<string,string>, cache?: 'none'|'memory'}): void;
+   *   _clear(): void;
+   * }}
+   */
+  async function router(a, b, c, d) {
+    // Registration sugar: Router('/path', handler) => default GET
+    if (typeof a === 'string' && typeof b === 'function' && c === undefined && d === undefined) {
+      addRoute('GET', a, b);
+      return;
+    }
+
+    // Invocation: Router(method, path, req?, res?)
+    if (typeof a === 'string' && typeof b === 'string') {
+      return invoke(a, b, c, d);
+    }
+
+    // Invocation sugar: Router(path, req?, res?) -> default GET
+    if (typeof a === 'string' && typeof b === 'object' && (c === undefined || typeof c === 'object')) {
+      return invoke('GET', a, /** @type {Request} */(b), /** @type {Response} */(c));
+    }
+
+    throw new TypeError(
+      'Invalid call. Register with Router.get(path, handler) or Router(path, handler). ' +
+      'Invoke with Router(method, path, req?, res?) or Router(path, req?, res?).'
+    );
+  }
+
+  /**
+   * Register a middleware. Order matters—registered order is execution order.
+   * @param {Middleware} mw
+   * @returns {void}
+   */
+  router.use = (mw) => {
+    if (typeof mw !== 'function') throw new TypeError('middleware must be a function');
+    middlewares.push(mw);
+  };
+
+  // HTTP verbs
+  for (const M of METHODS) {
+    /**
+     * Register a route for the HTTP method.
+     * @param {string} path
+     * @param {Handler} handler
+     * @returns {void}
+     * @example Router.get('/users/:id', (req) => ({ id: req.params.id }));
+     */
+    router[M.toLowerCase()] = (path, handler) => addRoute(M, path, handler);
+  }
+
+  /**
+   * Alias for `GET` registration. Equivalent to `Router.get(path, handler)`.
+   * @param {string} path
+   * @param {Handler} handler
+   * @returns {void}
+   */
+  router.handle = (path, handler) => addRoute('GET', path, handler);
+
+  /**
+   * Serve a single file on a route.
+   * - `src` can be:
+   *    - string or URL -> fetched via fetch() (subject to CORS/same-origin)
+   *    - Blob / ArrayBuffer / Uint8Array -> returned as-is
+   *    - function -> called (can return string/Blob/ArrayBuffer/Uint8Array or Promise)
+   * - Returns a Response-like object `{ status, type, headers, body }`
+   * @param {string} routePath
+   * @param {string|URL|Blob|ArrayBuffer|Uint8Array|(()=>Promise<any>|any)} src
+   * @param {{contentType?: string, status?: number, cache?: 'memory'|'none', headers?: Record<string,string>, name?: string}} [options]
+   * @returns {void}
+   *
+   * @example
+   * // Serving a bundled asset URL:
+   * Router.file('/fileManager.ps1', new URL('./fileManager.ps1', import.meta.url));
+   *
+   * @example
+   * // Vite raw import as text:
+   * // import fileText from './fileManager.ps1?raw';
+   * // Router.file('/fileManager.ps1', () => fileText, { contentType: 'text/plain; charset=utf-8' });
+   */
+  router.file = (routePath, src, options = {}) => {
+    let memCache = null; // simple in-memory cache per route
+    const {
+      contentType,
+      status = 200,
+      cache = 'none',
+      headers = {},
+      name, // optional filename hint
+    } = options;
+
+    const load = async () => {
+      // custom loader function
+      if (typeof src === 'function') {
+        return await src();
+      }
+      // Blob / ArrayBuffer / Uint8Array
+      if (src instanceof Blob || src instanceof Uint8Array || src instanceof ArrayBuffer) {
+        return src;
+      }
+      // URL or string -> fetch
+      const url = src instanceof URL ? src.toString() : String(src);
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`Failed to fetch ${url}: ${r.status} ${r.statusText}`);
+      // Prefer Blob; caller can decide how to use it
+      return await r.blob();
+    };
+
+    router.get(routePath, async (_req, _res) => {
+      if (cache === 'memory' && memCache) return memCache;
+
+      const data = await load();
+      /** @type {ResponseLike} */
+      const out = { status, headers: { ...headers } };
+
+      if (typeof data === 'string') {
+        out.body = data;
+        out.type = contentType || 'text/plain; charset=utf-8';
+      } else if (data instanceof Blob) {
+        out.body = data;
+        out.type = contentType || data.type || guessType(typeof src === 'string' ? src : (name || routePath));
+      } else if (data instanceof Uint8Array || data instanceof ArrayBuffer) {
+        out.body = data;
+        out.type = contentType || guessType(typeof src === 'string' ? src : (name || routePath));
+      } else {
+        // Fallback: JSON-stringify unknown
+        out.body = JSON.stringify(data);
+        out.type = contentType || 'application/json; charset=utf-8';
+      }
+
+      if (name) {
+        out.headers['Content-Disposition'] = `inline; filename="${name}"`;
+      }
+      if (cache === 'memory') memCache = out;
+      return out;
+    });
+  };
+
+  /**
+   * Serve files from a base URL using a wildcard route.
+   * Example: Router.static('/assets/*', '/public/')
+   * GET /assets/img/logo.png -> fetch('/public/img/logo.png')
+   *
+   * Returns a Response-like object mirroring most of the fetch() response.
+   *
+   * @param {string} routePattern - Must include a trailing wildcard, e.g. '/assets/*' or '/assets/:path*'
+   * @param {string|URL} baseUrl - Base to resolve the wildcard against.
+   * @param {{forwardHeaders?: Record<string,string>, cache?: 'none'|'memory'}} [options]
+   * @returns {void}
+   */
+  router.static = (routePattern, baseUrl, options = {}) => {
+    const { forwardHeaders = {}, cache = 'none' } = options;
+    if (!/\/(\*|:[A-Za-z0-9_]+\*)$/.test(routePattern)) {
+      throw new Error(`Router.static requires a trailing '*' or ':name*' in routePattern (got "${routePattern}")`);
+    }
+
+    let memCache = new Map(); // key -> ResponseLike
+
+    router.get(routePattern, async (req, _res) => {
+      const restKey = req.params.wildcard ?? Object.values(req.params)[0] ?? '';
+      const base = baseUrl instanceof URL ? baseUrl.toString() : String(baseUrl);
+      // Ensure single slash join
+      const url = base.replace(/\/+$/, '') + '/' + String(restKey).replace(/^\/+/, '');
+
+      if (cache === 'memory' && memCache.has(url)) {
+        return memCache.get(url);
+      }
+
+      const r = await fetch(url, { headers: { ...forwardHeaders } });
+      const blob = await r.blob();
+
+      /** @type {ResponseLike} */
+      const out = {
+        status: r.status,
+        type: r.headers.get('content-type') || guessType(url),
+        headers: Object.fromEntries(r.headers.entries()),
+        body: blob,
+      };
+
+      if (cache === 'memory' && r.ok) memCache.set(url, out);
+      return out;
+    });
+  };
+
+  /**
+   * Clear all routes and middlewares (useful for tests).
+   * @returns {void}
+   * @private
+   */
+  router._clear = () => { routes.length = 0; middlewares.length = 0; };
+
+  return router;
+})();
