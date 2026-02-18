@@ -1,22 +1,8 @@
 /**
  * @module ReverseEngineer (Auto-Sanitize Args)
- * @version 1.4.3
+ * @version 1.4.1
  * @description ReverseEngineer is an open-source JavaScript library that allows you to encode/decode and encrypt/decrypt strings,
  * and provides a small GUI to experiment with loaded algorithms.
- *
- * Changes in 1.4.3:
- * - **Core sanitization**: init/forward/reverse now sanitize inputs **centrally** before invoking algorithms.
- *   This guarantees consistent types no matter how the engine is called (GUI or programmatic).
- *   - Strings that look like JSON/JSON-ish are parsed into objects/arrays (unquoted keys quoted, single → double quotes,
- *     trailing commas removed), keys validated, values sanitized (no functions/symbols/undefined; blocks __proto__/prototype/constructor).
- *   - "true"/"false" → booleans, "null" → null, numeric strings (ints/floats/exponent) → numbers, else stays string.
- *   - Arrays/objects are deep‑sanitized; File/Blob/ArrayBuffer/TypedArray/DataView/Date are **preserved**.
- * - GUI keeps its friendly parser, but the engine no longer depends on GUI to coerce types.
- *
- * Changes in 1.4.2 (previous):
- * - When args contain strings that *look like* JSON/JSON-ish objects (e.g. "{\nkey: '...', ...}"),
- *   the GUI attempts to **coerce and sanitize** them to real JSON objects (quote keys, single→double quotes, remove trailing commas, etc.).
- *
  * @see https://github.com/XHiddenProjects/ReverseEngineer
  */
 
